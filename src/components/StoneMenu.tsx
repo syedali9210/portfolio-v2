@@ -30,6 +30,12 @@ export function StoneMenu({ github }: { github: string }) {
     });
   }, []);
 
+  // Nothing moves under the blur, so it only has to be worked out while it's arriving.
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-hold", open);
+    return () => document.documentElement.removeAttribute("data-hold");
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const key = (e: KeyboardEvent) => {
@@ -44,10 +50,13 @@ export function StoneMenu({ github }: { github: string }) {
   const shut = () => setOpen(false);
   return (
     <div ref={root} className="smenu" data-open={open || undefined}>
+      <div className="smenu-blur" aria-hidden="true" />
       <div className="smenu-veil" onClick={shut} aria-hidden="true" />
       <button ref={stone} type="button" data-boot="" className="smenu-stone" aria-label="Menu" aria-expanded={open} aria-controls="smenu-panel" data-sound="bronze" onClick={() => setOpen(!open)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, shown small */}
-        <img data-land="stone" src="/stamps/piece-menu.webp" alt="" width={216} height={271} decoding="async" draggable={false} />
+        <span className="smenu-bob">
+          <img data-land="stone" src="/stamps/piece-menu.webp" alt="" width={216} height={271} decoding="async" draggable={false} />
+        </span>
       </button>
       <div id="smenu-panel" className="smenu-panel" inert={!open}>
         <nav aria-label="Main" className="smenu-nav font-serif">

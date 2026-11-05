@@ -90,6 +90,8 @@ Illustrations are hairline figures (`illustrations/<name>.js`), checked on the h
 
 `npm run fields` bakes the work section's dithered fields (`scripts/stamps/fields.py`).
 
+`python scripts/stamps/soft.py` bakes the hero rocks' shadows, and the dome and the paper's noise in both themes: small pictures, so a phone only ever has to move them. Change the dome's colours there.
+
 `npm run stamps -- pieces` bakes the archive's stones (`PIECES` in `bake.py`: each piece's colour, outline, chips and carving), or `npm run stamps -- pieces vault deck` only those. A new archive piece in `content/archive.ts` needs an entry there. The phone's menu stone is one of these too: `npm run stamps -- pieces menu`.
 
 The pages' own stones are pieces too: `npm run stamps -- pieces archive experience about`, and so is the way back from a case study on a phone: `pieces back`. Each also leaves a small `-icon` picture, which sits beside its word in the menu and flies to its page when pressed.

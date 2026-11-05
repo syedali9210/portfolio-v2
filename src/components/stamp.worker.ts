@@ -249,7 +249,7 @@ const step = (s: Spring, k: number, c: number, dt: number) => {
 };
 
 type Mote = { x: number; y: number; z: number; vx: number; vy: number; vz: number; age: number; life: number; size: number; grow: number; warm: number; fine: number; drag: number; fall: number; base: number; seed: number };
-type Blow = { u: number; v: number; at: number; done: boolean; quiet?: boolean };
+type Blow = { u: number; v: number; at: number; done: boolean };
 
 type Stamp = {
   id: number;
@@ -280,7 +280,6 @@ type Stamp = {
   k: number; // how big it is lifted
   straight: number; // how far lifting turns it upright
   stage: boolean; // lifted onto a stage, by the page
-  overAt: number;
   fade: number;
   entry: [number, number];
   blows: Blow[];
@@ -378,7 +377,7 @@ async function init(m: Init) {
   const s: Stamp = {
     id: m.id, gl, canvas: m.canvas, prog, shadow, dustProg, vao, empty, dustVao, dustBuf, count, stone: STONES[m.slug] ?? STONES.trace, // an archive stone's own comes from its picture, below
     u: uniforms(gl, prog), us: uniforms(gl, shadow), ud: uniforms(gl, dustProg), ready: false,
-    w: m.w, h: m.h, box: m.box, dpr: m.dpr, rot0: m.rot, on: false, live: false, t: 0, settle: 1, k: 1.3, straight: 0.62, stage: false, overAt: 0, fade: 0, entry: [0.5, 0.5], blows: [], dust: [], drift: 0,
+    w: m.w, h: m.h, box: m.box, dpr: m.dpr, rot0: m.rot, on: false, live: false, t: 0, settle: 1, k: 1.3, straight: 0.62, stage: false, fade: 0, entry: [0.5, 0.5], blows: [], dust: [], drift: 0,
     lift: spring(), tx: spring(), ty: spring(), lx: spring(LAMP_REST[0]), ly: spring(LAMP_REST[1]), sx: spring(), sy: spring(), px: 0, py: 0, nx: 0, ny: 0, fresh: false, sized: false, pending: 0,
   };
   stamps.set(m.id, s);
@@ -441,14 +440,7 @@ async function init(m: Init) {
   s.fade = 0;
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   postMessage({ type: "ready", id: m.id });
-  if (s.pending) {
-    // On a stage it's already on its way, its picture growing to meet it: it comes in at about that size, and its first blow is heard.
-    if (s.on && s.stage) {
-      s.lift.x = Math.min(1, (performance.now() - s.overAt) / 450);
-      if (s.blows[0]) s.blows[0].quiet = false;
-    }
-    ask(s);
-  }
+  if (s.pending) ask(s);
 }
 
 // Full size only from a stamp's first lift: most of the time most of them are only pictures.
@@ -637,7 +629,7 @@ function frame(now: number) {
       s.t += dt;
       s.fade = Math.min(1, s.fade + dt / 0.14);
       s.settle = Math.max(0, s.settle - dt / 0.2);
-      for (const b of s.blows) if (!b.done && s.t >= b.at) strike(s, b, b.quiet);
+      for (const b of s.blows) if (!b.done && s.t >= b.at) strike(s, b);
     } else {
       s.t += dt;
       s.settle = Math.min(1, s.settle + dt / 0.45);
@@ -686,6 +678,20 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
     if (s.sized) resize(s);
   } else if (m.type === "rot") s.rot0 = m.rot;
   else if (m.type === "over") {
+    // Off a stage the page's picture takes over at once and flies home, so nothing here moves any more. The last frame stays up while the page fades the canvas out.
+    if (!m.on && m.stage) {
+      s.on = s.live = s.fresh = false;
+      s.pending = 0;
+      s.fade = 0;
+      s.settle = 1;
+      s.dust.length = 0;
+      s.blows = [];
+      for (const sp of [s.lift, s.tx, s.ty, s.sx, s.sy]) sp.x = sp.t = sp.v = 0;
+      s.lx.x = s.lx.t = LAMP_REST[0];
+      s.ly.x = s.ly.t = LAMP_REST[1];
+      s.lx.v = s.ly.v = 0;
+      return void postMessage({ type: "rest", id: s.id });
+    }
     const was = s.on;
     s.on = m.on;
     if (m.on) {
@@ -696,7 +702,12 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
       s.k = m.k ?? 1.3;
       s.straight = m.straight ?? 0.62;
       s.stage = !!m.stage;
-      s.overAt = performance.now();
+      // On a stage the picture has already flown it here: it comes in at that size and that pose, with nothing left to lift.
+      if (s.stage) {
+        s.lift.x = s.lift.t = 1;
+        s.lift.v = 0;
+        s.fade = 1;
+      }
     }
     if (m.on && !was) {
       // Where the pointer came in, on the plaque: the page's y runs down, the stamp's rotated by rot0. The first blow lands
@@ -705,9 +716,9 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
       const lx = c * m.x + r * m.y, ly = -r * m.x + c * m.y;
       const eu = Math.min(0.8, Math.max(0.2, 0.5 + lx / s.w)), ev = Math.min(0.78, Math.max(0.16, 0.5 + ly / s.h));
       s.entry = [eu, ev];
-      s.t = 0;
+      s.t = s.stage ? -0.3 : 0; // on a stage, a beat after it comes up
       s.blows = [
-        { u: eu, v: ev, at: BLOWS[0], done: false, quiet: s.stage }, // on a stage, the press that put it there has already sounded
+        { u: eu, v: ev, at: BLOWS[0], done: false },
         { u: 0.5 + (0.5 - eu) * 0.7, v: 0.46 + (0.46 - ev) * 0.6, at: BLOWS[1], done: false },
         { u: 0.5, v: 0.44, at: BLOWS[2], done: false },
       ];

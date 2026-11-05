@@ -5,6 +5,7 @@ import { flushSync } from "react-dom";
 import { PageLink } from "./PageLink";
 import { onScrollFrame, still } from "./scroll";
 import { hammer } from "./Sound";
+import { warmEffects } from "./warm";
 
 export type StampItem = { slug: string; title: string; kind: string; year: string; summary: string; who?: string };
 
@@ -292,14 +293,17 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
 
 /** The phone's layout, in step with the CSS. */
 const NARROW = "(max-width: 1023px)";
+/** When a stone on stage comes alive, ms after the tap: it has landed (0.85 s, in the CSS) and its words have settled, so starting its GL holds nothing up. */
+const LANDED = 1100;
 
 /**
  * The first screen's stamps: one per project, each a whole piece of rock with the project carved into it and a link to its case
  * study, alive through useStones. Pointed at, the others lose focus and make room, and a black tag names it.
  *
- * On a phone they lie in an arc, and a tap puts one on stage: it flies to the middle, upright and big, over the blurred page, and is
- * hammered, with what it is and a way into its case study under it. A press anywhere else, or Esc, sends it back to its place. Its
- * maps only load when it's first tapped, as they're a megabyte each.
+ * On a phone they lie in an arc, and a tap puts one on stage: it eases to the middle, upright and big, over the blurred page, with what
+ * it is and a way into its case study under it. A press anywhere else, or Esc, eases it back to its place. The flight is only its picture
+ * moving, so nothing can hold it up; once it's landed its canvas comes up and it's hammered. Its maps only load then, as they're a
+ * megabyte each and starting a GL context stalls the GPU for a moment.
  */
 export function Stamps({ items }: { items: StampItem[] }) {
   const host = useRef<HTMLUListElement>(null);
@@ -307,6 +311,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
   const sheet = useRef<HTMLDivElement>(null);
   const staged = useRef<HTMLElement | null>(null);
   const hide = useRef(() => {});
+  const landing = useRef(0);
   const [words, setWords] = useState<StampItem | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -341,8 +346,11 @@ export function Stamps({ items }: { items: StampItem[] }) {
       li.style.setProperty("--k", k.toFixed(3));
       li.dataset.stage = "";
       staged.current = li;
-      s.wake(li);
-      s.post(li, { type: "over", on: true, x: w * 0.16, y: h * 0.1, nx: 0, ny: 0, k, straight: 1, stage: true });
+      document.documentElement.setAttribute("data-hold", "");
+      landing.current = window.setTimeout(() => {
+        s.wake(li);
+        s.post(li, { type: "over", on: true, x: w * 0.16, y: h * 0.1, nx: 0, ny: 0, k, straight: 1, stage: true });
+      }, LANDED);
       flushSync(() => setOpen(true));
       box.querySelector("a")?.focus({ preventScroll: true });
     };
@@ -350,11 +358,14 @@ export function Stamps({ items }: { items: StampItem[] }) {
       const li = staged.current;
       if (!li) return;
       staged.current = null;
+      clearTimeout(landing.current);
+      document.documentElement.removeAttribute("data-hold");
       setOpen(false);
       delete li.dataset.stage;
+      delete li.dataset.gl;
       li.style.removeProperty("--dx");
       li.style.removeProperty("--dy");
-      s.post(li, { type: "over", on: false, x: 0, y: 0, nx: 0, ny: 0 });
+      s.post(li, { type: "over", on: false, x: 0, y: 0, nx: 0, ny: 0, stage: true });
       li.querySelector<HTMLElement>(".stamp-link")?.focus({ preventScroll: true });
     };
     const onTap = (e: MouseEvent) => {
@@ -367,6 +378,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
       else if (!document.documentElement.classList.contains("boot")) show(li);
     };
 
+    warmEffects();
     // They only float while they're on the screen.
     const away = new IntersectionObserver(([e]) => root.toggleAttribute("data-away", !e.isIntersecting));
     away.observe(root);
@@ -374,6 +386,8 @@ export function Stamps({ items }: { items: StampItem[] }) {
     narrow.addEventListener("change", fit);
     root.addEventListener("click", onTap, true);
     return () => {
+      clearTimeout(landing.current);
+      document.documentElement.removeAttribute("data-hold");
       away.disconnect();
       narrow.removeEventListener("change", fit);
       root.removeEventListener("click", onTap, true);
@@ -464,6 +478,8 @@ export function Stamps({ items }: { items: StampItem[] }) {
           return (
             <li key={s.slug} className="stamp" style={style} data-slug={s.slug} data-rx={l.rx} data-rr={l.rr} data-fly-scope>
               <span className="stamp-rest" data-fly="stone" data-land-from={`/work/${s.slug}`} aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element -- its shadow, baked, so moving it costs nothing (scripts/stamps/soft.py) */}
+                <img className="stamp-shadow" src={`/stamps/${s.slug}-shadow.webp`} alt="" width={240} height={300} decoding="async" draggable={false} />
                 {/* eslint-disable-next-line @next/next/no-img-element -- baked with its perforated edge in alpha, 512 px */}
                 <img src={`/stamps/${s.slug}-sm.webp`} alt="" width={512} height={641} decoding="async" draggable={false} />
               </span>
@@ -478,6 +494,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
       <button type="button" className="stamps-back" onClick={() => dispatchEvent(new Event("stamps:row"))} data-sound="bronze">
         <span aria-hidden="true">←</span> Go back <span className="text-label">[Esc]</span>
       </button>
+      <div className="stamp-blur" data-open={open || undefined} aria-hidden="true" />
       <div className="stamp-veil" data-open={open || undefined} onClick={() => hide.current()} aria-hidden="true" />
       <div className="stamp-stage" data-open={open || undefined} role={open ? "dialog" : undefined} aria-modal={open || undefined} aria-label={open ? words?.title : undefined} inert={!open}>
         <button type="button" className="stamp-close" aria-label="Put it back" onClick={() => hide.current()}>

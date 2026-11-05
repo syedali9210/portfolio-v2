@@ -9,6 +9,7 @@ import { plain } from "./Rich";
 import { onScrollFrame, still } from "./scroll";
 import { SoundToggle } from "./Sound";
 import { ThemeToggle } from "./ThemeToggle";
+import { warmEffects } from "./warm";
 
 type Mode = "full" | "quick";
 
@@ -28,8 +29,10 @@ function setMode(m: Mode) {
     window.scrollTo({ top: 0, behavior: "instant" });
   };
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (document.startViewTransition && !reduce) document.startViewTransition(apply);
-  else apply();
+  if (!document.startViewTransition || reduce) return apply();
+  const root = document.documentElement;
+  root.dataset.vt = "fade";
+  document.startViewTransition(apply).finished.finally(() => delete root.dataset.vt);
 }
 function useMode() {
   const [mode, setModeState] = useState<Mode>("full");
@@ -272,6 +275,14 @@ function PhoneNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
     };
   }, []);
 
+  useEffect(warmEffects, []);
+
+  // Nothing moves under the blur, so it only has to be worked out while it's arriving.
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-hold", open);
+    return () => document.documentElement.removeAttribute("data-hold");
+  }, [open]);
+
   // The list shuts on Esc, which then doesn't also close the case study.
   useEffect(() => {
     if (!open) return;
@@ -286,6 +297,7 @@ function PhoneNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
 
   return (
     <div className="pnav" data-open={open || undefined}>
+      <div className="pnav-blur" aria-hidden="true" />
       <div className="pnav-veil" onClick={() => setOpen(false)} aria-hidden="true" />
       <div id="pnav-list" className="pnav-panel" inert={!open}>
         <nav aria-label="On this page" className="pnav-list font-serif">

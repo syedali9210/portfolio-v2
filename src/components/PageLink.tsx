@@ -24,7 +24,7 @@ const area = (el: Element) => {
   const r = el.getBoundingClientRect();
   return r.width * r.height;
 };
-const pictureOf = (el: Element) => (el.matches("img") ? (el as HTMLImageElement) : el.querySelector("img"));
+const pictureOf = (el: Element) => (el.matches("img") ? (el as HTMLImageElement) : el.querySelector<HTMLImageElement>("img:not(.stamp-shadow)"));
 const stoneOf = (el: Element) => pictureOf(el)?.currentSrc.split("/").pop()?.replace(/(-icon|-sm)?\.webp.*$/, "");
 
 // A resting stone may be asleep under its live canvas: for the flight its picture takes over, in the same pose. A snapshot is taken at

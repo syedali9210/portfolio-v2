@@ -50,6 +50,7 @@
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-glide: cubic-bezier(0.4, 0.02, 0.35, 1); /* something big travelling: a soft start, a long soft landing, never faster than about twice its average speed */
 }
 
 :root {
@@ -102,7 +103,7 @@
 }
 
 /* The switch's icons trade places: the one leaving turns and shrinks away, the one arriving turns in. */
-.theme-toggle :is(.theme-moon, .theme-sun) { transition: opacity 0.3s var(--ease-out), rotate 0.45s var(--ease-out), scale 0.45s var(--ease-out); }
+.theme-toggle :is(.theme-moon, .theme-sun) { transition: opacity 0.4s var(--ease-glide), rotate 0.55s var(--ease-glide), scale 0.55s var(--ease-glide); }
 .theme-toggle .theme-sun { opacity: 0; rotate: -90deg; scale: 0.5; }
 :root[data-theme="dark"] .theme-toggle .theme-sun { opacity: 1; rotate: 0deg; scale: 1; }
 :root[data-theme="dark"] .theme-toggle .theme-moon { opacity: 0; rotate: 90deg; scale: 0.5; }
@@ -273,6 +274,7 @@ html { scroll-padding-top: 72px; }
 .bottom-blur > :nth-child(1) { backdrop-filter: blur(2px); mask-image: linear-gradient(to bottom, transparent, #000 40%); }
 .bottom-blur > :nth-child(2) { backdrop-filter: blur(6px); mask-image: linear-gradient(to bottom, transparent 30%, #000 75%); }
 .bottom-blur > :nth-child(3) { backdrop-filter: blur(14px); mask-image: linear-gradient(to bottom, transparent 60%, #000); }
+@media (max-width: 1023px) { .bottom-blur > :nth-child(1), .bottom-blur > :nth-child(3) { display: none; } } /* a phone gets one layer, not three: it's worked out on every scroll */
 
 /* ── Colour: the entry card's sky, the highlighter, the vivid panel ─────
    Each case study sets --deep, --mid, --light and --hl (its own colours, sampled from its screens) on the page. */
@@ -410,23 +412,19 @@ html.boot.boot-in [data-boot] {
 @keyframes scaffold-box { to { opacity: 1; } }
 
 /* The paper (Paper.tsx): a fine fibre and a drifting grain laid over the page as faint translucent flecks (no blend
-   mode, so scrolling never re-composites it). The grain moves by transform, so its drift never repaints. In dark the
-   flecks are light. */
+   mode, so scrolling never re-composites it). The grain moves by transform, so its drift never repaints. Baked tiles, in each theme (scripts/stamps/soft.py):
+   as live SVG noise the GPU redrew them on every theme switch and page change. In dark the flecks are light. */
+:root { --paper-vellum: url("/stamps/paper-vellum.webp"); --paper-grain: url("/stamps/paper-grain.webp"); }
+:root[data-theme="dark"] { --paper-vellum: url("/stamps/paper-vellum-dark.webp"); --paper-grain: url("/stamps/paper-grain-dark.webp"); }
 .paper { position: fixed; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .paper > span { position: absolute; }
-.paper-vellum {
-  inset: 0; opacity: 0.08;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360'><filter id='v'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.35 0 0 0 0 0.41 0 0 0 0.9 0'/></filter><rect width='100%25' height='100%25' filter='url(%23v)'/></svg>");
-}
-.paper-grain {
-  inset: -60px; opacity: 0.06; animation: grain 7s steps(7) infinite;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='2.2' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
-}
+.paper::after { content: ""; position: absolute; width: 0; height: 0; background: url("/stamps/paper-vellum.webp"), url("/stamps/paper-grain.webp"), url("/stamps/paper-vellum-dark.webp"), url("/stamps/paper-grain-dark.webp"); } /* all ready, so the theme can change over them */
+.paper-vellum { inset: 0; opacity: 0.08; background: var(--paper-vellum) 0 0 / 360px; }
+.paper-grain { inset: -60px; opacity: 0.06; animation: grain 7s steps(7) infinite; background: var(--paper-grain) 0 0 / 180px; }
 @keyframes grain {
   0% { transform: translate3d(0, 0, 0); } 15% { transform: translate3d(-22px, 14px, 0); } 30% { transform: translate3d(18px, -26px, 0); }
   45% { transform: translate3d(-12px, 30px, 0); } 60% { transform: translate3d(26px, 8px, 0); } 75% { transform: translate3d(-28px, -10px, 0); } 100% { transform: translate3d(0, 0, 0); }
 }
-:root[data-theme="dark"] .paper > span { filter: invert(1); }
 :root[data-theme="dark"] .paper-vellum { opacity: 0.05; }
 :root[data-theme="dark"] .paper-grain { opacity: 0.045; }
 /* Letterpress: the line takes the ink filter. */
@@ -541,13 +539,15 @@ section.hero { --fx: 36px; --fw: min(100vw, 620px); min-height: 100svh; }
 .stamps .stamp:nth-child(4) { --fb: 3.1s; --fs: 5.2s; --fd: -0.8s; }
 .stamps .stamp:nth-child(5) { --fb: 4.1s; --fs: 4.6s; --fd: -2.4s; }
 .stamps .stamp:nth-child(6) { --fb: 3.5s; --fs: 6s; --fd: -4.2s; }
-.stamps[data-focus] .stamp, .stamps[data-away] .stamp, .stamps .stamp[data-gl] { animation-play-state: paused; }
+.stamps[data-focus] .stamp, .stamps[data-away] .stamp, .stamps .stamp[data-gl], html[data-hold] .stamps .stamp, html[data-hold] .smenu-bob, html[data-hold] .paper-grain { animation-play-state: paused; }
 @keyframes stone-bob { from { transform: translate3d(calc(var(--fa) * -0.3), calc(var(--fa) * -1), 0); } to { transform: translate3d(calc(var(--fa) * 0.3), var(--fa), 0); } }
 @keyframes stone-sway { from { rotate: -1.3deg; } to { rotate: 1.3deg; } }
 .stamp[data-lift], .stamp[data-gl] { z-index: 50; }
 .stamps[data-focus] .stamp:not([data-lift]) { filter: blur(4px); }
 .stamp-rest, .stamp-link { position: absolute; left: calc(var(--sw) * -0.5); top: calc(var(--sh) * -0.5); width: var(--sw); height: var(--sh); }
 .stamp-rest { display: block; pointer-events: none; filter: drop-shadow(-3px 8px 14px rgb(20 26 40 / 0.2)) drop-shadow(-8px 28px 30px rgb(20 26 40 / 0.15)); }
+.stamps .stamp-rest { filter: none; }
+.stamps .stamp-rest .stamp-shadow { position: absolute; left: -40%; top: -40%; width: 180%; height: 180%; max-width: none; translate: calc(var(--sw) * -0.026) calc(var(--sw) * 0.09); }
 .stamp-rest img { display: block; width: 100%; height: 100%; rotate: calc(var(--rot-now) * 1deg); transition: rotate 0.7s var(--ease-out); user-select: none; -webkit-user-drag: none; }
 .stamp-link { pointer-events: auto; rotate: calc(var(--rot-now) * 1deg); -webkit-tap-highlight-color: transparent; transition: rotate 0.7s var(--ease-out), translate 0.24s var(--ease-out), scale 0.24s var(--ease-out); touch-action: manipulation; }
 .stamp-link:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 6px; }
@@ -575,31 +575,49 @@ html[data-stamps-row] .stamps-back { opacity: 1; translate: -50% 0; pointer-even
    under it. Its canvas is drawn big enough from the start, so nothing is scaled up after it's drawn; its picture, while the canvas loads
    or where there isn't one, grows to the same size. A press on the page beside the words falls through to the veil, which puts it back. */
 @media (max-width: 1023px) {
-  .stamps .stamp-gl { --gl: 4.9; }
-  .stamps .stamp-link { border-radius: 42%; } /* so a tap beside a rock's corner lands on the rock under it */
+  /* The canvas comes up over the picture once it's landed, and fades as the picture leaves. */
+  .stamps .stamp-gl { --gl: 4.9; opacity: 0; scale: calc(1 / var(--k, 1)); rotate: calc(var(--rot-now) * 1deg); transition: opacity 0.16s ease-out, scale 0.7s var(--ease-glide), rotate 0.7s var(--ease-glide), visibility 0s linear 0.16s; }
+  .stamps .stamp[data-stage] .stamp-gl { scale: 1; rotate: 0deg; }
+  .stamps .stamp[data-stage][data-gl] .stamp-gl { opacity: 1; transition: opacity 0.32s ease-out; }
+  .stamps .stamp[data-gl]:not([data-stage]) .stamp-rest { visibility: visible; }
+  .stamps .stamp[data-stage][data-gl] .stamp-rest { visibility: hidden; transition: visibility 0s linear 0.32s; }
+  .stamps .stamp-rest { transition: scale 0.7s var(--ease-glide); }
+  .stamps .stamp-rest img { transition: rotate 0.7s var(--ease-glide); }
+  .stamps .stamp-link { border-radius: 42%; transition: none; } /* so a tap beside a rock's corner lands on the rock under it */
   /* Over the veil only on stage, and on its way home; its canvas can stay up for seconds after that, while its dust settles. */
-  .stamps .stamp { transition: translate 0.55s var(--ease-out), z-index 0s linear 0.3s; }
+  .stamps .stamp { transition: translate 0.7s var(--ease-glide), z-index 0s linear 0.36s; }
   .stamps .stamp[data-gl] { z-index: var(--mz); }
 }
-.stamp-rest { transition: scale 0.55s var(--ease-out); }
-.stamp[data-stage], .stamps .stamp[data-stage] { z-index: 50; transition: translate 0.55s var(--ease-out), z-index 0s; }
+.stamp[data-stage], .stamps .stamp[data-stage] { z-index: 50; transition: translate 0.85s var(--ease-glide), z-index 0s; }
 .stamp[data-stage] .stamp-gl { visibility: visible; }
 .stamp[data-stage] .stamp-link { rotate: 0deg; scale: var(--k); touch-action: none; }
-.stamp[data-stage]:not([data-gl]) .stamp-rest { scale: var(--k); }
-.stamp[data-stage]:not([data-gl]) .stamp-rest img { rotate: 0deg; }
+.stamp[data-stage] .stamp-rest { scale: var(--k); transition: scale 0.85s var(--ease-glide), visibility 0s linear 0.32s; }
+.stamp[data-stage] .stamp-rest img { rotate: 0deg; transition: rotate 0.85s var(--ease-glide); }
 .stamp-veil, .smenu-veil, .pnav-veil {
-  position: fixed; inset: 0; background: color-mix(in oklab, var(--color-sheet) 80%, transparent); backdrop-filter: blur(14px); touch-action: none;
-  opacity: 0; visibility: hidden; transition: opacity 0.34s var(--ease-out), visibility 0s linear 0.34s;
+  position: fixed; inset: 0; background: color-mix(in oklab, var(--color-sheet) 80%, transparent); touch-action: none; pointer-events: none;
+  opacity: 0; transition: opacity 0.36s var(--ease-glide);
 }
+/* The blur is its own layer under the tint, because working it out is the costly part. It arrives once the big motion is easing off, and leaves first. */
+.stamp-blur, .smenu-blur, .pnav-blur { position: fixed; inset: 0; pointer-events: none; backdrop-filter: blur(14px); opacity: 0; transition: opacity 0.22s ease-out; }
+.stamp-blur { z-index: 39; }
+.stamp-blur[data-open], .smenu[data-open] .smenu-blur, .pnav[data-open] .pnav-blur { opacity: 1; transition: opacity 0.46s ease-in-out 0.26s; }
+.smenu[data-open] .smenu-blur, .pnav[data-open] .pnav-blur { transition: opacity 0.42s ease-in-out; } /* a menu has no big flight to wait for */
 .stamp-veil { z-index: 40; }
-.stamp-veil[data-open], .smenu[data-open] .smenu-veil, .pnav[data-open] .pnav-veil { opacity: 1; visibility: visible; transition-delay: 0s; }
-.stamp-stage { position: fixed; inset: 0; z-index: 51; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.2s; }
-.stamp-stage[data-open] { visibility: visible; transition-delay: 0s; }
-.stamp-stage a, .stamp-stage button { pointer-events: auto; }
-.stamp-close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; color: var(--color-fg); font-size: 26px; line-height: 1; }
+.stamp-veil[data-open], .smenu[data-open] .smenu-veil, .pnav[data-open] .pnav-veil { opacity: 1; pointer-events: auto; transition: opacity 0.6s var(--ease-glide); }
+.smenu[data-open] .smenu-veil, .pnav[data-open] .pnav-veil { transition: opacity 0.42s var(--ease-glide); }
+.stamp-stage { position: fixed; inset: 0; z-index: 51; pointer-events: none; }
+.stamp-stage[data-open] a, .stamp-stage[data-open] button { pointer-events: auto; }
+.stamp-close { position: absolute; top: 12px; right: 12px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; color: var(--color-fg); font-size: 26px; line-height: 1; opacity: 0; transition: opacity 0.2s ease-out, scale 0.16s var(--ease-out); }
+.stamp-stage[data-open] .stamp-close { opacity: 1; transition: opacity 0.5s var(--ease-glide) 0.4s, scale 0.16s var(--ease-out); }
 .stamp-close:active { scale: 0.95; }
-.stamp-sheet { position: absolute; left: 24px; right: 24px; text-align: center; opacity: 0; translate: 0 14px; transition: opacity 0.16s ease-out, translate 0.16s ease-out; }
-.stamp-stage[data-open] .stamp-sheet { opacity: 1; translate: 0 0; transition: opacity 0.42s var(--ease-out) 0.16s, translate 0.6s var(--ease-out) 0.16s; }
+/* The words rise in one after another as the stone slows, and leave first. */
+.stamp-sheet { position: absolute; left: 24px; right: 24px; text-align: center; }
+.stamp-sheet > * { opacity: 0; translate: 0 12px; transition: opacity 0.2s ease-out, translate 0.24s var(--ease-glide); }
+.stamp-stage[data-open] .stamp-sheet > * { opacity: 1; translate: 0 0; transition: opacity 0.46s var(--ease-glide) var(--w), translate 0.56s var(--ease-glide) var(--w); }
+.stamp-sheet > :nth-child(1) { --w: 0.3s; }
+.stamp-sheet > :nth-child(2) { --w: 0.34s; }
+.stamp-sheet > :nth-child(3) { --w: 0.38s; }
+.stamp-sheet > :nth-child(4) { --w: 0.42s; }
 .stamp-sheet[data-side] { left: 50%; text-align: left; }
 .stamp-sheet-name { font-size: clamp(26px, 7.2vw, 36px); font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; color: var(--color-ink); text-wrap: balance; }
 .stamp-sheet-kind { margin-top: 6px; font: 400 11px/1.4 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-label); }
@@ -623,39 +641,48 @@ html[data-stamps-row] .stamps-back { opacity: 1; translate: -50% 0; pointer-even
 .menu-stone { position: absolute; left: calc(100% + 8px); top: 50%; width: 22px; height: auto; margin-top: -14px; opacity: 0; translate: -6px 2px; rotate: -14deg; filter: drop-shadow(0 2px 3px rgb(20 26 40 / 0.3)); pointer-events: none; user-select: none; transition: opacity 0.16s var(--ease-out), translate 0.24s var(--ease-out), rotate 0.24s var(--ease-out); }
 a:hover > .menu-stone, a:focus-visible > .menu-stone, a:active > .menu-stone { opacity: 1; translate: 0 0; rotate: -5deg; }
 
+/* warm.ts: once at idle, the GPU meets each effect on a phone in a corner too small and faint to see. */
+.warm { position: fixed; left: 0; top: 0; z-index: 1; width: 6px; height: 6px; opacity: 0.02; pointer-events: none; }
+.warm-1 { backdrop-filter: blur(14px); }
+.warm-2 { backdrop-filter: blur(12px); mask-image: linear-gradient(135deg, transparent 1px, #000 5px); }
+.warm-3 { background: color-mix(in oklab, var(--color-sheet) 58%, transparent); mask-image: linear-gradient(135deg, transparent 1px, #000 5px); }
+
 /* The menu on a phone (StoneMenu.tsx): a stone in the corner, under a stone on stage and over everything else. */
 /* The menu's soft blur: it opens only with the menu, from the corner up to Syed's line, from the left edge a screen's width down to the top right
    corner, and fades out there, so the page above it stays sharp. (A gradient at 135deg runs from the top left corner, so its stops are distances
    along that diagonal.) It's masked, not clipped: a tap on the sharp part still lands on it and shuts the menu. */
-.smenu-veil, .pnav-veil { z-index: 30; background: color-mix(in oklab, var(--color-sheet) 58%, transparent); backdrop-filter: blur(12px); mask-image: linear-gradient(135deg, transparent 44vmin, #000 88vmin); }
-.smenu-stone { position: fixed; z-index: 31; right: 12px; bottom: 12px; width: 62px; height: 78px; rotate: 6deg; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: rotate 0.5s var(--ease-out), translate 0.5s var(--ease-out), scale 0.16s var(--ease-out); }
-.smenu[data-tuck]:not([data-open]) .smenu-stone { translate: 40px 4px; rotate: 44deg; }
-.smenu-stone img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; --fa: 3px; animation: stone-bob 3.3s ease-in-out infinite alternate; }
-.smenu[data-open] .smenu-stone img, .smenu[data-tuck] .smenu-stone img { animation-play-state: paused; }
-.smenu-stone:active { scale: 0.92; }
+.smenu-veil, .pnav-veil { z-index: 30; background: color-mix(in oklab, var(--color-sheet) 58%, transparent); mask-image: linear-gradient(135deg, transparent 44vmin, #000 88vmin); }
+.smenu-blur, .pnav-blur { z-index: 29; backdrop-filter: blur(12px); mask-image: linear-gradient(135deg, transparent 44vmin, #000 88vmin); }
+.smenu-stone { position: fixed; z-index: 31; right: 12px; bottom: 12px; width: 62px; height: 78px; transform: translate(0, 0) rotate(6deg); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: transform 0.62s var(--ease-glide); }
+.smenu[data-tuck]:not([data-open]) .smenu-stone { transform: translate(40px, 4px) rotate(44deg); }
+/* The shadow's on the picture, inside the layer that bobs, so it's drawn once and only moved. */
+.smenu-bob { display: block; width: 100%; height: 100%; --fa: 3px; animation: stone-bob 3.3s ease-in-out infinite alternate; }
+.smenu[data-tuck] .smenu-bob { animation-play-state: paused; }
+.smenu-stone img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); transition: scale 0.16s var(--ease-out); }
+.smenu-stone:active img { scale: 0.92; }
 .smenu-stone:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 40%; }
-.smenu[data-open] .smenu-stone { rotate: -14deg; }
-.smenu-panel { position: fixed; z-index: 31; left: 16px; right: 12px; bottom: 12px; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.2s; }
-.smenu[data-open] .smenu-panel { visibility: visible; transition-delay: 0s; }
-.smenu-panel a, .smenu-panel button { pointer-events: auto; }
+.smenu[data-open] .smenu-stone { transform: translate(0, 0) rotate(-14deg); }
+/* Painted and ready from the start, not on its first opening; shut, it's see-through and inert. */
+.smenu-panel { position: fixed; z-index: 31; left: 16px; right: 12px; bottom: 12px; pointer-events: none; }
+.smenu[data-open] .smenu-panel a, .smenu[data-open] .smenu-panel button { pointer-events: auto; }
 .smenu-nav { display: flex; flex-direction: column; align-items: flex-end; margin-bottom: 18px; }
-.smenu-nav a { display: inline-flex; align-items: center; min-height: 60px; font-size: clamp(34px, 9.6vw, 48px); line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); opacity: 0; translate: 0 14px; transition: opacity 0.14s ease-out, translate 0.14s ease-out; }
-.smenu[data-open] .smenu-nav a { opacity: 1; translate: 0 0; transition: opacity 0.36s var(--ease-out), translate 0.5s var(--ease-out); }
-.smenu[data-open] .smenu-nav a:nth-child(3) { transition-delay: 0.04s; }
-.smenu[data-open] .smenu-nav a:nth-child(2) { transition-delay: 0.08s; }
-.smenu[data-open] .smenu-nav a:nth-child(1) { transition-delay: 0.12s; }
+.smenu-nav a { display: inline-flex; align-items: center; min-height: 60px; font-size: clamp(34px, 9.6vw, 48px); line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); opacity: 0.001; translate: 0 12px; will-change: opacity, translate; transition: opacity 0.22s ease-out, translate 0.28s var(--ease-glide); } /* 0.001, not 0: painted now, so its first opening has nothing to paint */
+.smenu[data-open] .smenu-nav a { opacity: 1; translate: 0 0; transition: opacity 0.42s var(--ease-glide) 0.14s, translate 0.56s var(--ease-glide) 0.14s; }
+.smenu[data-open] .smenu-nav a:nth-child(3) { transition-delay: 0.18s; }
+.smenu[data-open] .smenu-nav a:nth-child(2) { transition-delay: 0.22s; }
+.smenu[data-open] .smenu-nav a:nth-child(1) { transition-delay: 0.26s; }
 .smenu-nav img { width: 34px; height: auto; margin-right: 12px; rotate: -6deg; filter: drop-shadow(0 2px 4px rgb(20 26 40 / 0.3)); user-select: none; -webkit-user-drag: none; }
-.smenu-foot { display: flex; align-items: center; gap: 8px; height: 78px; padding-right: 74px; opacity: 0; transition: opacity 0.14s ease-out; }
-.smenu[data-open] .smenu-foot { opacity: 1; transition: opacity 0.4s var(--ease-out) 0.1s; }
+.smenu-foot { display: flex; align-items: center; gap: 8px; height: 78px; padding-right: 74px; opacity: 0.001; will-change: opacity; transition: opacity 0.22s ease-out; }
+.smenu[data-open] .smenu-foot { opacity: 1; transition: opacity 0.44s var(--ease-glide) 0.2s; }
 .smenu-out { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-right: auto; font: 400 11px/1.4 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-fg); }
 /* A phone on its side: the foot's left end is above the blur's line, so GitHub joins the switches in it. */
 @media (orientation: landscape) { .smenu-out { margin-right: 0; margin-left: auto; } }
 /* A case study's way round on a phone (Panels.tsx): a carved stone, and the stones' black tag grown into a bar. */
 .pnav-dock { position: fixed; z-index: 41; left: 10px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); max-width: 620px; margin-inline: auto; display: flex; align-items: center; gap: 6px; transition: opacity 0.22s var(--ease-out), translate 0.3s var(--ease-out); }
 html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events: none; }
-.pnav-back { flex: none; width: 52px; height: 65px; rotate: -6deg; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: scale 0.16s var(--ease-out), rotate 0.24s var(--ease-out); }
+.pnav-back { flex: none; width: 52px; height: 65px; rotate: -6deg; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: scale 0.16s var(--ease-out); }
 .pnav-back img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
-.pnav-back:active { scale: 0.92; rotate: -12deg; }
+.pnav-back:active { scale: 0.92; }
 .pnav-back:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 40%; }
 .pnav-bar { --tag: #16181c; --tag-ink: #f5f5f7; --tick: #fb923c; position: relative; flex: 1; min-width: 0; height: 52px; overflow: hidden; border-radius: 999px; color: var(--tag-ink); background: var(--tag); box-shadow: 0 12px 26px -12px rgb(0 0 0 / 0.55); }
 :root[data-theme="dark"] .pnav-bar { --tag: #f5f5f7; --tag-ink: #16181c; --tick: #c2410c; }
@@ -669,20 +696,19 @@ html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events:
 .pnav-ticks i { width: 9px; height: 2px; border-radius: 1px; background: currentColor; opacity: 0.2; transition: opacity 0.22s var(--ease-out), background-color 0.22s var(--ease-out); }
 .pnav-ticks i[data-past] { opacity: 0.5; }
 .pnav-ticks i[data-on] { opacity: 1; background: var(--tick); }
-.pnav-panel { position: fixed; z-index: 40; left: 16px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; max-height: calc(100svh - 96px); overflow-y: auto; scrollbar-width: none; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.2s; }
-.pnav[data-open] .pnav-panel { visibility: visible; transition-delay: 0s; }
-.pnav-panel a, .pnav-panel button { pointer-events: auto; }
+.pnav-panel { position: fixed; z-index: 40; left: 16px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; max-height: calc(100svh - 96px); overflow-y: auto; scrollbar-width: none; pointer-events: none; }
+.pnav[data-open] .pnav-panel a, .pnav[data-open] .pnav-panel button { pointer-events: auto; }
 .pnav-list { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
-.pnav-list a { display: inline-flex; align-items: center; min-height: 52px; font-size: clamp(30px, 8.6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); opacity: 0; translate: 0 12px; transition: opacity 0.14s ease-out, translate 0.14s ease-out; }
+.pnav-list a { display: inline-flex; align-items: center; min-height: 52px; font-size: clamp(30px, 8.6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); opacity: 0.001; translate: 0 12px; will-change: opacity, translate; transition: opacity 0.22s ease-out, translate 0.28s var(--ease-glide); }
 .pnav-list a[aria-current] { color: var(--color-accent); }
-.pnav[data-open] .pnav-list a { opacity: 1; translate: 0 0; transition: opacity 0.34s var(--ease-out), translate 0.48s var(--ease-out); }
-.pnav[data-open] .pnav-list a:nth-last-child(2) { transition-delay: 0.03s; }
-.pnav[data-open] .pnav-list a:nth-last-child(3) { transition-delay: 0.06s; }
-.pnav[data-open] .pnav-list a:nth-last-child(4) { transition-delay: 0.09s; }
-.pnav[data-open] .pnav-list a:nth-last-child(5) { transition-delay: 0.12s; }
-.pnav[data-open] .pnav-list a:nth-last-child(6) { transition-delay: 0.15s; }
-.pnav-mode, .pnav-foot { opacity: 0; transition: opacity 0.14s ease-out; }
-.pnav[data-open] .pnav-mode, .pnav[data-open] .pnav-foot { opacity: 1; transition: opacity 0.38s var(--ease-out) 0.08s; }
+.pnav[data-open] .pnav-list a { opacity: 1; translate: 0 0; transition: opacity 0.42s var(--ease-glide) 0.14s, translate 0.56s var(--ease-glide) 0.14s; }
+.pnav[data-open] .pnav-list a:nth-last-child(2) { transition-delay: 0.17s; }
+.pnav[data-open] .pnav-list a:nth-last-child(3) { transition-delay: 0.2s; }
+.pnav[data-open] .pnav-list a:nth-last-child(4) { transition-delay: 0.23s; }
+.pnav[data-open] .pnav-list a:nth-last-child(5) { transition-delay: 0.26s; }
+.pnav[data-open] .pnav-list a:nth-last-child(6) { transition-delay: 0.29s; }
+.pnav-mode, .pnav-foot { opacity: 0.001; will-change: opacity; transition: opacity 0.22s ease-out; }
+.pnav[data-open] .pnav-mode, .pnav[data-open] .pnav-foot { opacity: 1; transition: opacity 0.44s var(--ease-glide) 0.1s; }
 .pnav-mode { flex: none; width: min(100%, 300px); margin-top: 14px; }
 .pnav-foot { display: flex; flex: none; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; width: 100%; margin-top: 10px; }
 .pnav-foot .smenu-out { margin-right: auto; margin-left: 0; }
@@ -695,25 +721,22 @@ html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events:
   .pnav-foot { grid-area: 2 / 1; }
 }
 @media (min-width: 1024px) { .pnav { display: none; } }
-@media (prefers-reduced-motion: reduce) { .pnav-dock, .pnav-back, .pnav-veil, .pnav-panel, .pnav-list a, .pnav[data-open] .pnav-list a, .pnav-mode, .pnav-foot, .pnav-strip a, .pnav-ticks i { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .pnav-dock, .pnav-back, .pnav-veil, .pnav-blur, .pnav-panel, .pnav-list a, .pnav[data-open] .pnav-list a, .pnav-mode, .pnav-foot, .pnav-strip a, .pnav-ticks i { transition: none; } }
 
 /* The page's foot clears the stone: nothing's left to scroll it out from under. */
 @media (max-width: 1023px) { .home > footer { margin-bottom: 96px; } }
-@media (min-width: 1024px) { .smenu, .stamp-veil, .stamp-stage { display: none; } }
+@media (min-width: 1024px) { .smenu, .stamp-blur, .stamp-veil, .stamp-stage { display: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .stamps .stamp, .smenu-stone img { animation: none; }
-  .menu-stone, .stamps .stamp, .stamps .stamp[data-stage], .stamp, .stamp-rest, .stamp-rest img, .stamp-link, .stamp-tag, .hero-top, .hero-tag, .hero-card, .stamp-veil, .stamp-stage, .stamp-sheet, .stamp-stage[data-open] .stamp-sheet, .smenu-veil, .smenu-stone, .smenu-panel, .smenu-nav a, .smenu[data-open] .smenu-nav a, .smenu-foot, .smenu[data-open] .smenu-foot { transition: none; }
+  .stamps .stamp, .smenu-bob { animation: none; }
+  .stamps .stamp-rest, .stamps .stamp-rest img, .stamp[data-stage] .stamp-rest, .stamp[data-stage] .stamp-rest img, .stamp-blur, .smenu-blur, .stamp-sheet > *, .stamp-stage[data-open] .stamp-sheet > *, .stamp-close, .stamp-stage[data-open] .stamp-close, .stamps .stamp-gl, .stamps .stamp[data-stage][data-gl] .stamp-gl, .menu-stone, .stamps .stamp, .stamps .stamp[data-stage], .stamp, .stamp-rest, .stamp-rest img, .stamp-link, .stamp-tag, .hero-top, .hero-tag, .hero-card, .stamp-veil, .stamp-stage, .stamp-sheet, .stamp-stage[data-open] .stamp-sheet, .smenu-veil, .smenu-stone, .smenu-panel, .smenu-nav a, .smenu[data-open] .smenu-nav a, .smenu-foot, .smenu[data-open] .smenu-foot { transition: none; }
 }
 
 /* ── The colour passage into the archive (Dome.tsx) ──────────────────────────────────────────────────────────────
    Abhijit Rout's dome, his colours sampled down the middle of his image: a lavender rim, pink, coral, orange, ember,
    rust and the deep red into an ink core. The bell unrolls down from its top edge as it scrolls in; the second band is
    the same bell upside down, so the ink passes and the page comes back. */
-:root {
-  --dome-1: #ecbafc; --dome-2: #e8b6e2; --dome-3: #eaa4ad; --dome-4: #f0876d; --dome-5: #f5ab92;
-  --dome-6: #f9c8b6; --dome-7: #fcdfd3; --dome-8: #fef2ec; --dome-9: #ffffff;
-}
-:root[data-theme="dark"] { --dome-5: #e46332; --dome-6: #bc4017; --dome-7: #831c0b; --dome-8: #3a0503; --dome-9: #0b0808; }
+:root { --dome-9: #ffffff; --dome-picture: url("/stamps/dome-light.webp"); }
+:root[data-theme="dark"] { --dome-9: #0b0808; --dome-picture: url("/stamps/dome-dark.webp"); }
 .dome { position: relative; height: 140svh; pointer-events: none; }
 .dome-after { height: 120svh; margin-top: -2px; } /* overlapped a hair, so the core has no seam */
 /* While the first bell is still unrolling, the foot of its band is already ink, so the projects below never meet a
@@ -722,7 +745,17 @@ html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events:
 /* The projects sit on the dome's ink core (his black section between the two transitions): the page's colours turn over
    here, as the dark theme does, so text stays readable and the cards' tints mix toward the ink. */
 .dome-zone { background: var(--dome-9); --color-sheet: var(--dome-9); --mix: var(--dome-9); color: var(--color-fg); }
-.dome-body { position: absolute; inset: 0; transform-origin: 50% 0; will-change: transform; }
+.dome-body { position: absolute; inset: 0; background: var(--dome-picture) center / 100% 100% no-repeat; transform-origin: 50% 0; will-change: transform; }
+.dome::after { content: ""; position: absolute; width: 0; height: 0; background: url("/stamps/dome-light.webp"), url("/stamps/dome-dark.webp"); } /* both ready, so the theme can change over it */
+/* On a phone it doesn't unroll: scaled it reads as stretching, and tied to a finger's scroll from the page's thread it runs a frame behind. It's simply there, and the page's own scroll brings it up. */
+@media (max-width: 1023px) {
+  .dome { height: 110svh; }
+  .dome-after { height: 100svh; }
+  .dome:not(.dome-after) .dome-body { transform: none !important; visibility: visible !important; will-change: auto; }
+  .dome-foot { display: none; }
+}
+/* On a tall screen the whole bell squeezed into its width still looks pulled upward, like a flame. Its middle half keeps a dome's own proportions. */
+@media (max-width: 1023px) and (orientation: portrait) { .dome-body { background-size: 200% 100%; } }
 .dome-foot { position: absolute; left: 0; right: 0; top: 0; height: 16svh; translate: 0 -100%; visibility: hidden; background: linear-gradient(transparent, color-mix(in srgb, var(--color-sheet) 98%, #000)); will-change: transform; } /* the sheet as it's seen, under the paper's grain */
 .dome-after .dome-body { transform: scaleY(-1); transform-origin: 50% 50%; will-change: auto; }
 
@@ -732,6 +765,9 @@ html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events:
 ::view-transition-old(root) { animation: nav-out 0.2s ease-out both; mix-blend-mode: normal; }
 ::view-transition-new(root) { animation: nav-in 0.34s ease-out 0.26s both; mix-blend-mode: normal; }
 html[data-nav-home]::view-transition-new(root) { animation-duration: 0.28s; animation-delay: 0.12s; }
+/* A cross-fade, the theme or how much to read. It holds a beat first: the new page's first frames are the costly ones, and nothing should be moving yet. */
+html[data-vt="fade"]::view-transition-old(root) { animation: nav-out 0.5s var(--ease-glide) 0.1s both; mix-blend-mode: plus-lighter; }
+html[data-vt="fade"]::view-transition-new(root) { animation: nav-in 0.5s var(--ease-glide) 0.1s both; mix-blend-mode: plus-lighter; }
 @keyframes nav-out { to { opacity: 0; } }
 @keyframes nav-in { from { opacity: 0; } }
 ::view-transition-group(fly-stone), ::view-transition-group(fly-screen) { animation-duration: 0.62s; animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1); }

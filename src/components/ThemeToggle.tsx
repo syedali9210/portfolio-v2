@@ -15,9 +15,9 @@ function apply(dark: boolean) {
 }
 
 /**
- * Light and dark. The colours change at once (no reveal: Syed's rule, and a full-page view transition drops frames on
- * an iGPU). Both icons are drawn and the CSS shows the right one, so the server's markup never disagrees with the
- * remembered theme.
+ * Light and dark, cross-faded: the page as it was over the page as it is, on the compositor, so the work of repainting every colour
+ * happens once, unseen, before it starts. Both icons are drawn and the CSS shows the right one, so the server's markup never disagrees
+ * with the remembered theme.
  */
 export function ThemeToggle({ className = "", plain = false }: { className?: string; plain?: boolean }) {
   const [dark, setDark] = useState(false);
@@ -28,7 +28,12 @@ export function ThemeToggle({ className = "", plain = false }: { className?: str
     return () => removeEventListener("themechange", sync);
   }, []);
 
-  const toggle = () => apply(document.documentElement.dataset.theme !== "dark");
+  const toggle = () => {
+    const root = document.documentElement, dark = root.dataset.theme !== "dark";
+    if (!document.startViewTransition || matchMedia("(prefers-reduced-motion: reduce)").matches) return apply(dark);
+    root.dataset.vt = "fade";
+    document.startViewTransition(() => apply(dark)).finished.finally(() => delete root.dataset.vt);
+  };
 
   return (
     <button
