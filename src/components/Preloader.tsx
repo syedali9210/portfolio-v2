@@ -38,6 +38,7 @@ export function Preloader() {
       later(() => {
         setPhase("focus");
         html.classList.add("boot-in");
+        dispatchEvent(new Event("boot:in"));
       }, 850);
       later(() => setPhase("out"), 2000);
       later(done, 2700);

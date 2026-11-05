@@ -293,14 +293,52 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
 
 /** The phone's layout, in step with the CSS. */
 const NARROW = "(max-width: 1023px)";
-/** When a stone on stage comes alive, ms after the tap: it has landed (0.85 s, in the CSS) and its words have settled, so starting its GL holds nothing up. */
-const LANDED = 1100;
+/** When a stone on stage comes alive, ms after the tap: it has landed (0.62 s, in the CSS) and its words have settled, so starting its GL holds nothing up. */
+const LANDED = 850;
+/** The arc on a phone is a fan: each stone's place (mx, my) lies this far, of the frame's width, from one rivet, turned as far as its mrot. */
+const REACH = 0.4;
+/** The fan opening: ms after the first screen starts to focus, so the one stone has been seen, and how long it takes. */
+const FAN_WAIT = 800, FAN_TIME = 1000;
+
+/**
+ * The arc shut, as on a folding fan: all the stones on the first one's place, the rest hidden under it, held there paused. Played, the
+ * outermost sweeps out clockwise round the rivet and pulls each of the others out from under as it reaches them, so they all land
+ * together. Each stone's turn round the rivet is a path for the li and a turn for its picture, which leaves its float running throughout.
+ */
+function shutFan(lis: HTMLElement[]) {
+  const turn = (li: HTMLElement) => LAY[li.dataset.slug!].mrot;
+  const angles = lis.map(turn), first = Math.min(...angles), last = Math.max(...angles);
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+  const timing = { duration: FAN_TIME, easing: getComputedStyle(document.documentElement).getPropertyValue("--ease-glide").trim() || "ease-out" };
+  return lis
+    .filter((li) => turn(li) !== first)
+    .flatMap((li) => {
+      const end = turn(li), starts = (last - end) / (last - first); // how far through the sweep this one is reached
+      const at = (deg: number) => `calc(var(--fw) * ${(REACH * (Math.sin(rad(deg)) - Math.sin(rad(end)))).toFixed(4)}) calc(var(--fw) * ${(REACH * (Math.cos(rad(end)) - Math.cos(rad(deg)))).toFixed(4)})`;
+      const steps = Math.ceil((end - first) / 6);
+      const path = Array.from({ length: steps + 1 }, (_, k) => ({ translate: at(first + ((end - first) * k) / steps), offset: starts + ((1 - starts) * k) / steps }));
+      const shut = `${first - end}deg`;
+      return [
+        li.animate([{ translate: at(first), offset: 0 }, ...path], timing),
+        li.querySelector(".stamp-rest")!.animate(
+          [
+            { rotate: shut, opacity: 0, offset: 0 },
+            { rotate: shut, opacity: 0, offset: starts },
+            { opacity: 1, offset: starts + 0.04 },
+            { rotate: "0deg", opacity: 1, offset: 1 },
+          ],
+          timing,
+        ),
+      ];
+    })
+    .map((a) => (a.pause(), a));
+}
 
 /**
  * The first screen's stamps: one per project, each a whole piece of rock with the project carved into it and a link to its case
  * study, alive through useStones. Pointed at, the others lose focus and make room, and a black tag names it.
  *
- * On a phone they lie in an arc, and a tap puts one on stage: it eases to the middle, upright and big, over the blurred page, with what
+ * On a phone they lie in an arc, which opens from one stone like a folding fan when the page first loads (shutFan). A tap puts one on stage: it eases to the middle, upright and big, over the blurred page, with what
  * it is and a way into its case study under it. A press anywhere else, or Esc, eases it back to its place. The flight is only its picture
  * moving, so nothing can hold it up; once it's landed its canvas comes up and it's hammered. Its maps only load then, as they're a
  * megabyte each and starting a GL context stalls the GPU for a moment.
@@ -320,14 +358,45 @@ export function Stamps({ items }: { items: StampItem[] }) {
     const s = stones.current!;
     const narrow = matchMedia(NARROW);
     const links = [...root.querySelectorAll<HTMLElement>(".stamp-link")];
+    // Only on a full load of the page, on a phone: it opens once its first stone is on the screen, which on a small one may take a scroll.
+    let fan: Animation[] = [];
+    let fanWait = 0, fanView: IntersectionObserver | undefined;
+    const openFan = () => {
+      fanWait = window.setTimeout(() => {
+        fanView = new IntersectionObserver(
+          ([e]) => {
+            if (!e.isIntersecting) return;
+            fanView!.disconnect();
+            fan.forEach((a) => a.play());
+          },
+          { threshold: 0.5 },
+        );
+        fanView.observe(links[0]);
+      }, FAN_WAIT);
+    };
+    const endFan = (how: "finish" | "cancel") => {
+      removeEventListener("boot:in", openFan);
+      clearTimeout(fanWait);
+      fanView?.disconnect();
+      fan.forEach((a) => a[how]());
+      fan = [];
+    };
+    if (narrow.matches && document.documentElement.classList.contains("boot")) {
+      fan = shutFan([...root.querySelectorAll<HTMLElement>(".stamp")]);
+      addEventListener("boot:in", openFan, { once: true });
+    }
     // On a phone nothing lifts under a pointer or on focus, and a stone opens this dialog before it goes anywhere.
     const fit = () => {
       s.frozen = narrow.matches;
       links.forEach((a) => (narrow.matches ? a.setAttribute("aria-haspopup", "dialog") : a.removeAttribute("aria-haspopup")));
-      if (!narrow.matches) hide.current();
+      if (!narrow.matches) {
+        hide.current();
+        endFan("cancel");
+      }
     };
 
     const show = (li: HTMLElement) => {
+      endFan("finish");
       const item = items.find((i) => i.slug === li.dataset.slug)!;
       const box = sheet.current!;
       const vw = document.documentElement.clientWidth, vh = innerHeight;
@@ -386,6 +455,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
     narrow.addEventListener("change", fit);
     root.addEventListener("click", onTap, true);
     return () => {
+      endFan("cancel");
       clearTimeout(landing.current);
       document.documentElement.removeAttribute("data-hold");
       away.disconnect();

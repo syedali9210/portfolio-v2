@@ -716,7 +716,7 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
       const lx = c * m.x + r * m.y, ly = -r * m.x + c * m.y;
       const eu = Math.min(0.8, Math.max(0.2, 0.5 + lx / s.w)), ev = Math.min(0.78, Math.max(0.16, 0.5 + ly / s.h));
       s.entry = [eu, ev];
-      s.t = s.stage ? -0.3 : 0; // on a stage, a beat after it comes up
+      s.t = s.stage ? -0.16 : 0; // on a stage, a beat after it comes up
       s.blows = [
         { u: eu, v: ev, at: BLOWS[0], done: false },
         { u: 0.5 + (0.5 - eu) * 0.7, v: 0.46 + (0.46 - ev) * 0.6, at: BLOWS[1], done: false },
