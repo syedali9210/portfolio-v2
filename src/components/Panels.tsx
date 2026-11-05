@@ -6,7 +6,7 @@ import { Icon } from "./Icon";
 import { useActiveSection } from "./motion";
 import { PageLink, usePageNav } from "./PageLink";
 import { plain } from "./Rich";
-import { onScrollFrame } from "./scroll";
+import { onScrollFrame, still } from "./scroll";
 import { SoundToggle } from "./Sound";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -91,7 +91,7 @@ export function Rails({ study }: { study: CaseStudy }) {
 }
 
 /**
- * Below 1440 px, one slim bar along the top in place of the old floating pill, which covered the content and was easy
+ * From 1024 to 1440 px, one slim bar along the top in place of the old floating pill, which covered the content and was easy
  * to hit by accident. On small screens a table of contents works best as in-page links in a list that opens on demand,
  * with the current section shown (NN/g, "Tables of Contents on Mobile"). So the bar names the section you're in, draws
  * how far you've read as a hairline, and opens "On this page" under itself. Clear over the entry sky, solid once the
@@ -138,7 +138,7 @@ function LocalNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
   const current = sections.find((s) => s.id === active);
   const iconButton = "grid size-11 shrink-0 place-items-center rounded-full text-fg transition-[background-color,scale] duration-200 hover:bg-card active:scale-95";
   return (
-    <header ref={bar} data-open={open || undefined} className="localnav fixed inset-x-0 top-0 z-40 min-[1440px]:hidden">
+    <header ref={bar} data-open={open || undefined} className="localnav fixed inset-x-0 top-0 z-40 max-lg:hidden min-[1440px]:hidden">
       <div className="mx-auto flex h-14 max-w-[calc(var(--wide)+2*var(--gutter))] items-center gap-1 px-[max(6px,calc(var(--gutter)-12px))]">
         <button
           ref={button}
@@ -207,6 +207,143 @@ function LocalNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
   );
 }
 
+/**
+ * On a phone the way round a case study sits at the foot of the screen, under the thumb, in the site's own things: a carved stone to go back,
+ * and the black tag the first screen's stones wear, grown into a bar. The bar names the section you're in, with the next one coming in at its
+ * edge and a tick for each. Tap a name or swipe the bar to go there. Tap the one you're in for the whole list and the switches, big words on
+ * the same soft blur as the home page's menu.
+ */
+function PhoneNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
+  const all = useMemo(() => [{ id: "overview", label: "Overview" }, ...study.status.sections.map((l) => ({ id: l.href.slice(1), label: l.label }))], [study]);
+  const active = useActiveSection(all.map((s) => s.id));
+  // Only the stops the page is showing: the quick overview leaves some out.
+  const [left, setLeft] = useState<string[]>([]);
+  useEffect(() => setLeft(all.filter((s) => !document.getElementById(s.id)?.getClientRects().length).map((s) => s.id)), [all, mode]);
+  const stops = all.filter((s) => !left.includes(s.id));
+  const at = stops.findIndex((s) => s.id === active);
+  const [open, setOpen] = useState(false);
+  const strip = useRef<HTMLDivElement>(null);
+  const swiping = useRef(false);
+
+  // The one you're in stays in the middle of the bar.
+  useEffect(() => {
+    const s = strip.current!, a = s.children[at] as HTMLElement | undefined;
+    if (a && !swiping.current) s.scrollTo({ left: a.offsetLeft - (s.clientWidth - a.offsetWidth) / 2, behavior: still() ? "auto" : "smooth" });
+  }, [at]);
+
+  // A swipe along the bar goes to the name it comes to rest on. (The scroll's own end event isn't in every phone's browser yet.)
+  useEffect(() => {
+    const s = strip.current!;
+    let touching = false, timer = 0;
+    const settle = () => {
+      swiping.current = false;
+      const mid = s.scrollLeft + s.clientWidth / 2, middle = (a: HTMLElement) => Math.abs(a.offsetLeft + a.offsetWidth / 2 - mid);
+      const near = ([...s.children] as HTMLElement[]).reduce((a, b) => (middle(b) < middle(a) ? b : a));
+      if (!near.hasAttribute("aria-current")) near.click();
+    };
+    const wait = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(settle, 140);
+    };
+    const down = () => {
+      touching = true;
+      clearTimeout(timer);
+    };
+    const move = () => void (swiping.current = true);
+    const up = () => {
+      touching = false;
+      if (swiping.current) wait();
+    };
+    const scrolled = () => {
+      if (swiping.current && !touching) wait();
+    };
+    s.addEventListener("touchstart", down, { passive: true });
+    s.addEventListener("touchmove", move, { passive: true });
+    s.addEventListener("touchend", up, { passive: true });
+    s.addEventListener("touchcancel", up, { passive: true });
+    s.addEventListener("scroll", scrolled, { passive: true });
+    return () => {
+      clearTimeout(timer);
+      s.removeEventListener("touchstart", down);
+      s.removeEventListener("touchmove", move);
+      s.removeEventListener("touchend", up);
+      s.removeEventListener("touchcancel", up);
+      s.removeEventListener("scroll", scrolled);
+    };
+  }, []);
+
+  // The list shuts on Esc, which then doesn't also close the case study.
+  useEffect(() => {
+    if (!open) return;
+    const key = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      e.stopPropagation();
+      setOpen(false);
+    };
+    window.addEventListener("keydown", key, true);
+    return () => window.removeEventListener("keydown", key, true);
+  }, [open]);
+
+  return (
+    <div className="pnav" data-open={open || undefined}>
+      <div className="pnav-veil" onClick={() => setOpen(false)} aria-hidden="true" />
+      <div id="pnav-list" className="pnav-panel" inert={!open}>
+        <nav aria-label="On this page" className="pnav-list font-serif">
+          {stops.map((s) => (
+            <a key={s.id} href={`#${s.id}`} aria-current={s.id === active ? "location" : undefined} onClick={() => setOpen(false)}>
+              {s.label}
+            </a>
+          ))}
+        </nav>
+        <ModeSwitch mode={mode} setMode={(m) => (setOpen(false), setMode(m))} className="pnav-mode" />
+        <div className="pnav-foot">
+          {study.status.links.slice(0, 1).map((l) => (
+            <a key={l.href} href={l.href} target="_blank" rel="noopener" className="smenu-out">
+              {l.label} <Icon name="arrow-up-right" size={11} />
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          ))}
+          <SoundToggle className="hero-toggle" />
+          <ThemeToggle plain className="hero-toggle" />
+        </div>
+      </div>
+      <div className="pnav-dock">
+        <PageLink href="/" className="pnav-back" aria-label="Back to the front page" data-sound="bronze">
+          {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, shown small */}
+          <img src="/stamps/piece-back.webp" alt="" width={216} height={271} decoding="async" draggable={false} />
+        </PageLink>
+        <div className="pnav-bar">
+          <nav ref={strip} aria-label="Sections" className="pnav-strip">
+            {stops.map((s) => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                aria-current={s.id === active ? "location" : undefined}
+                aria-expanded={s.id === active ? open : undefined}
+                aria-controls={s.id === active ? "pnav-list" : undefined}
+                data-sound="switch"
+                onClick={(e) => {
+                  if (s.id === active) {
+                    e.preventDefault();
+                    setOpen(!open);
+                  } else setOpen(false);
+                }}
+              >
+                {s.label}
+              </a>
+            ))}
+          </nav>
+          <span className="pnav-ticks" aria-hidden="true">
+            {stops.map((s, i) => (
+              <i key={s.id} data-on={i === at || undefined} data-past={i < at || undefined} />
+            ))}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Panels({ study }: { study: CaseStudy }) {
   const [mode] = useMode();
   const nav = usePageNav();
@@ -234,6 +371,7 @@ export function Panels({ study }: { study: CaseStudy }) {
   return (
     <>
       <LocalNav study={study} mode={mode} />
+      <PhoneNav study={study} mode={mode} />
 
       {/* From 1440 px: the way back as a breadcrumb at the top left (Rachel Chen's), the theme switch at the top right. */}
       <nav aria-label="Breadcrumb" className="fixed top-6 left-6 z-40 hidden items-center gap-2 text-[15px] min-[1440px]:flex">

@@ -92,6 +92,6 @@ Illustrations are hairline figures (`illustrations/<name>.js`), checked on the h
 
 `npm run stamps -- pieces` bakes the archive's stones (`PIECES` in `bake.py`: each piece's colour, outline, chips and carving), or `npm run stamps -- pieces vault deck` only those. A new archive piece in `content/archive.ts` needs an entry there. The phone's menu stone is one of these too: `npm run stamps -- pieces menu`.
 
-The pages' own stones are pieces too: `npm run stamps -- pieces archive experience about`. Each also leaves a small `-icon` picture, which sits beside its word in the menu and flies to its page when pressed.
+The pages' own stones are pieces too: `npm run stamps -- pieces archive experience about`, and so is the way back from a case study on a phone: `pieces back`. Each also leaves a small `-icon` picture, which sits beside its word in the menu and flies to its page when pressed.
 
 A new project needs a rock (a motif in `motifs.js`, a stone in `bake.py`, a place in `Stamps.tsx`, a material in `stamp.worker.ts`), a field in `fields.py` and a row in `ROWS` in `Home.tsx`.

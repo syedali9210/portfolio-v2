@@ -684,6 +684,19 @@ function paintPiece(d, n) {
         }
       }),
     ];
+  else if (d.subject === "back")
+    subject = [
+      layer("raise", 0.66, 6, (c) => {
+        c.lineWidth = 56;
+        c.beginPath();
+        c.moveTo(C[0] + 138, C[1]);
+        c.lineTo(C[0] - 118, C[1]);
+        c.moveTo(C[0] - 22, C[1] - 104);
+        c.lineTo(C[0] - 128, C[1]);
+        c.lineTo(C[0] - 22, C[1] + 104);
+        c.stroke();
+      }),
+    ];
   else if (d.subject === "menu")
     subject = [
       layer("raise", 0.66, 6, (c) => {

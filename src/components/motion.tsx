@@ -42,10 +42,17 @@ export function useActiveSection(ids: string[]) {
     return onScrollFrame(() => {
       const line = window.innerHeight * 0.35;
       let current = els[0]?.id;
-      for (const el of els) if (el.getBoundingClientRect().top <= line) current = el.id;
+      // A section the quick overview hides has no box, so it never counts as passed.
+      for (const el of els) {
+        const r = el.getBoundingClientRect();
+        if (r.height && r.top <= line) current = el.id;
+      }
       // At the foot of the page the last sections can't reach the line: the last one on screen wins.
       if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2)
-        for (const el of els) if (el.getBoundingClientRect().top < window.innerHeight) current = el.id;
+        for (const el of els) {
+          const r = el.getBoundingClientRect();
+          if (r.height && r.top < window.innerHeight) current = el.id;
+        }
       setActive(current);
     });
   }, [key]);

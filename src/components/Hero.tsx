@@ -20,7 +20,7 @@ export function Hero({ study }: { study: CaseStudy }) {
   const link = "out-link inline-flex h-9 items-center gap-1.5 text-copy text-ink underline-offset-4 hover:underline";
 
   return (
-    <header data-quick className="hero part pt-[clamp(72px,8vw,112px)]">
+    <header id="overview" data-quick className="hero part pt-[clamp(72px,8vw,112px)] max-lg:pt-3">
       <div className="col mx-auto w-full max-w-[calc(var(--wide)+2*var(--gutter))] px-[var(--gutter)]">
         <div className="sky relative aspect-[4/3] overflow-hidden sm:aspect-[16/9]">
           <div className="sky-glow" aria-hidden="true" />

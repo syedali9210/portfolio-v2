@@ -263,6 +263,7 @@ html.js [data-reveal][data-in] .wire-tile { opacity: 1; transform: none; }
 .toc-link[aria-current] .toc-dot { background: var(--color-accent); }
 html { scroll-padding-top: 72px; }
 @media (min-width: 1440px) { html { scroll-padding-top: 24px; } }
+@media (max-width: 1023px) { html { scroll-padding-top: 24px; } } /* a phone has no bar along the top */
 
 /* ── The bottom blur ──────────────────────────────────────────────────
    Three backdrop blurs, each stronger and lower, masked into one another: a progressive blur that thickens toward
@@ -586,12 +587,12 @@ html[data-stamps-row] .stamps-back { opacity: 1; translate: -50% 0; pointer-even
 .stamp[data-stage] .stamp-link { rotate: 0deg; scale: var(--k); touch-action: none; }
 .stamp[data-stage]:not([data-gl]) .stamp-rest { scale: var(--k); }
 .stamp[data-stage]:not([data-gl]) .stamp-rest img { rotate: 0deg; }
-.stamp-veil, .smenu-veil {
+.stamp-veil, .smenu-veil, .pnav-veil {
   position: fixed; inset: 0; background: color-mix(in oklab, var(--color-sheet) 80%, transparent); backdrop-filter: blur(14px); touch-action: none;
   opacity: 0; visibility: hidden; transition: opacity 0.34s var(--ease-out), visibility 0s linear 0.34s;
 }
 .stamp-veil { z-index: 40; }
-.stamp-veil[data-open], .smenu[data-open] .smenu-veil { opacity: 1; visibility: visible; transition-delay: 0s; }
+.stamp-veil[data-open], .smenu[data-open] .smenu-veil, .pnav[data-open] .pnav-veil { opacity: 1; visibility: visible; transition-delay: 0s; }
 .stamp-stage { position: fixed; inset: 0; z-index: 51; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.2s; }
 .stamp-stage[data-open] { visibility: visible; transition-delay: 0s; }
 .stamp-stage a, .stamp-stage button { pointer-events: auto; }
@@ -626,7 +627,7 @@ a:hover > .menu-stone, a:focus-visible > .menu-stone, a:active > .menu-stone { o
 /* The menu's soft blur: it opens only with the menu, from the corner up to Syed's line, from the left edge a screen's width down to the top right
    corner, and fades out there, so the page above it stays sharp. (A gradient at 135deg runs from the top left corner, so its stops are distances
    along that diagonal.) It's masked, not clipped: a tap on the sharp part still lands on it and shuts the menu. */
-.smenu-veil { z-index: 30; background: color-mix(in oklab, var(--color-sheet) 58%, transparent); backdrop-filter: blur(12px); mask-image: linear-gradient(135deg, transparent 44vmin, #000 88vmin); }
+.smenu-veil, .pnav-veil { z-index: 30; background: color-mix(in oklab, var(--color-sheet) 58%, transparent); backdrop-filter: blur(12px); mask-image: linear-gradient(135deg, transparent 44vmin, #000 88vmin); }
 .smenu-stone { position: fixed; z-index: 31; right: 12px; bottom: 12px; width: 62px; height: 78px; rotate: 6deg; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: rotate 0.5s var(--ease-out), translate 0.5s var(--ease-out), scale 0.16s var(--ease-out); }
 .smenu[data-tuck]:not([data-open]) .smenu-stone { translate: 40px 4px; rotate: 44deg; }
 .smenu-stone img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; --fa: 3px; animation: stone-bob 3.3s ease-in-out infinite alternate; }
@@ -649,6 +650,53 @@ a:hover > .menu-stone, a:focus-visible > .menu-stone, a:active > .menu-stone { o
 .smenu-out { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; margin-right: auto; font: 400 11px/1.4 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-fg); }
 /* A phone on its side: the foot's left end is above the blur's line, so GitHub joins the switches in it. */
 @media (orientation: landscape) { .smenu-out { margin-right: 0; margin-left: auto; } }
+/* A case study's way round on a phone (Panels.tsx): a carved stone, and the stones' black tag grown into a bar. */
+.pnav-dock { position: fixed; z-index: 41; left: 10px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); max-width: 620px; margin-inline: auto; display: flex; align-items: center; gap: 6px; transition: opacity 0.22s var(--ease-out), translate 0.3s var(--ease-out); }
+html[data-immersive] .pnav-dock { opacity: 0; translate: 0 12px; pointer-events: none; }
+.pnav-back { flex: none; width: 52px; height: 65px; rotate: -6deg; filter: drop-shadow(-1px 3px 3px rgb(20 26 40 / 0.3)) drop-shadow(-3px 10px 14px rgb(20 26 40 / 0.22)); -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: scale 0.16s var(--ease-out), rotate 0.24s var(--ease-out); }
+.pnav-back img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+.pnav-back:active { scale: 0.92; rotate: -12deg; }
+.pnav-back:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 40%; }
+.pnav-bar { --tag: #16181c; --tag-ink: #f5f5f7; --tick: #fb923c; position: relative; flex: 1; min-width: 0; height: 52px; overflow: hidden; border-radius: 999px; color: var(--tag-ink); background: var(--tag); box-shadow: 0 12px 26px -12px rgb(0 0 0 / 0.55); }
+:root[data-theme="dark"] .pnav-bar { --tag: #f5f5f7; --tag-ink: #16181c; --tick: #c2410c; }
+.pnav-strip { position: relative; display: flex; height: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; -webkit-mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
+.pnav-strip::-webkit-scrollbar { display: none; }
+.pnav-strip::before, .pnav-strip::after { content: ""; flex: 0 0 50%; }
+.pnav-strip a { flex: none; display: flex; align-items: center; padding: 0 13px 8px; scroll-snap-align: center; font: 400 12px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; opacity: 0.36; -webkit-tap-highlight-color: transparent; transition: opacity 0.22s var(--ease-out); }
+.pnav-strip a[aria-current] { opacity: 1; }
+.pnav-strip a:focus-visible { outline: 2px solid var(--tick); outline-offset: -8px; border-radius: 999px; }
+.pnav-ticks { position: absolute; left: 50%; bottom: 10px; display: flex; gap: 3px; translate: -50% 0; pointer-events: none; }
+.pnav-ticks i { width: 9px; height: 2px; border-radius: 1px; background: currentColor; opacity: 0.2; transition: opacity 0.22s var(--ease-out), background-color 0.22s var(--ease-out); }
+.pnav-ticks i[data-past] { opacity: 0.5; }
+.pnav-ticks i[data-on] { opacity: 1; background: var(--tick); }
+.pnav-panel { position: fixed; z-index: 40; left: 16px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; align-items: flex-end; max-height: calc(100svh - 96px); overflow-y: auto; scrollbar-width: none; pointer-events: none; visibility: hidden; transition: visibility 0s linear 0.2s; }
+.pnav[data-open] .pnav-panel { visibility: visible; transition-delay: 0s; }
+.pnav-panel a, .pnav-panel button { pointer-events: auto; }
+.pnav-list { display: flex; flex-direction: column; align-items: flex-end; flex: none; }
+.pnav-list a { display: inline-flex; align-items: center; min-height: 52px; font-size: clamp(30px, 8.6vw, 44px); line-height: 1.1; letter-spacing: -0.02em; color: var(--color-ink); opacity: 0; translate: 0 12px; transition: opacity 0.14s ease-out, translate 0.14s ease-out; }
+.pnav-list a[aria-current] { color: var(--color-accent); }
+.pnav[data-open] .pnav-list a { opacity: 1; translate: 0 0; transition: opacity 0.34s var(--ease-out), translate 0.48s var(--ease-out); }
+.pnav[data-open] .pnav-list a:nth-last-child(2) { transition-delay: 0.03s; }
+.pnav[data-open] .pnav-list a:nth-last-child(3) { transition-delay: 0.06s; }
+.pnav[data-open] .pnav-list a:nth-last-child(4) { transition-delay: 0.09s; }
+.pnav[data-open] .pnav-list a:nth-last-child(5) { transition-delay: 0.12s; }
+.pnav[data-open] .pnav-list a:nth-last-child(6) { transition-delay: 0.15s; }
+.pnav-mode, .pnav-foot { opacity: 0; transition: opacity 0.14s ease-out; }
+.pnav[data-open] .pnav-mode, .pnav[data-open] .pnav-foot { opacity: 1; transition: opacity 0.38s var(--ease-out) 0.08s; }
+.pnav-mode { flex: none; width: min(100%, 300px); margin-top: 14px; }
+.pnav-foot { display: flex; flex: none; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; width: 100%; margin-top: 10px; }
+.pnav-foot .smenu-out { margin-right: auto; margin-left: 0; }
+/* A phone on its side: the words on the right, the switches beside them, all in view. */
+@media (max-height: 560px) {
+  .pnav-panel { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; align-items: end; justify-items: end; }
+  .pnav-list { grid-area: 1 / 2 / 3 / 3; }
+  .pnav-list a { min-height: 44px; font-size: 24px; }
+  .pnav-mode { grid-area: 1 / 1; margin-top: 0; }
+  .pnav-foot { grid-area: 2 / 1; }
+}
+@media (min-width: 1024px) { .pnav { display: none; } }
+@media (prefers-reduced-motion: reduce) { .pnav-dock, .pnav-back, .pnav-veil, .pnav-panel, .pnav-list a, .pnav[data-open] .pnav-list a, .pnav-mode, .pnav-foot, .pnav-strip a, .pnav-ticks i { transition: none; } }
+
 /* The page's foot clears the stone: nothing's left to scroll it out from under. */
 @media (max-width: 1023px) { .home > footer { margin-bottom: 96px; } }
 @media (min-width: 1024px) { .smenu, .stamp-veil, .stamp-stage { display: none; } }

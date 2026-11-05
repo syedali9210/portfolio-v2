@@ -75,6 +75,8 @@ PIECES["experience"] = dict(title="Experience", subject="experience", page=True,
 PIECES["about"] = dict(title="About", words="SYED  ALI", subject="about", page=True, lo=(0.6, 0.45, 0.42), hi=(0.82, 0.66, 0.62), fleck=(0.34, 0.24, 0.22), spark=(0.94, 0.84, 0.8), vein=0.3, strata=0, rough=0.62, fresh=0.14, seed=419, chip=0.45, round=40, planes=(0, 1), shape=ring((-90, 0.47), (-45, 0.5), (0, 0.46), (45, 0.5), (90, 0.49), (135, 0.51), (180, 0.45), (225, 0.5)))
 # The phone's menu: a stone of the hero's kind in the site's accent, three bars cut on it. Only ever a small picture, so one small file.
 PIECES["menu"] = dict(title="Menu", words="MENU", subject="menu", icon=216, lo=(0.6, 0.22, 0.08), hi=(0.86, 0.4, 0.17), fleck=(0.36, 0.12, 0.04), spark=(0.95, 0.62, 0.38), vein=0, strata=0, rough=0.82, fresh=0.24, seed=401)
+# The way back from a case study on a phone: the menu stone's sibling, an arrow cut on it.
+PIECES["back"] = dict(title="Back", words="BACK", subject="back", icon=216, lo=(0.6, 0.22, 0.08), hi=(0.86, 0.4, 0.17), fleck=(0.36, 0.12, 0.04), spark=(0.95, 0.62, 0.38), vein=0, strata=0, rough=0.82, fresh=0.24, seed=431)
 for _id, _p in PIECES.items():
     STONE[f"piece-{_id}"] = _p
 
@@ -438,7 +440,7 @@ async def main():
         await pg.evaluate("document.fonts.load('700 30px ' + getComputedStyle(document.documentElement).getPropertyValue('--font-baskerville'))")
         for piece in pieces:
             o = PIECES[piece]
-            d = dict(slug=f"piece-{piece}", title=o["title"], subject=o["subject"], src=o.get("src"), film=o.get("film"), words=o.get("words"), count=sum(k not in ("archive", "menu", "experience", "about") for k in PIECES))
+            d = dict(slug=f"piece-{piece}", title=o["title"], subject=o["subject"], src=o.get("src"), film=o.get("film"), words=o.get("words"), count=sum(k not in ("archive", "menu", "experience", "about", "back") for k in PIECES))
             bake(d, await pg.evaluate("([d, n]) => paintPiece(d, n)", [d, list(PIECES).index(piece)]))
             print(d["slug"], "baked", flush=True)
         for n, slug in enumerate(SLUGS):
