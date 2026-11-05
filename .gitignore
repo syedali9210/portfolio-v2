@@ -3,3 +3,10 @@ node_modules
 out
 next-env.d.ts
 *.tsbuildinfo
+films
+
+# Not for a public repo: the working log and tool config, old preview shots, and fonts only licensed for trial (nothing uses them).
+LOG.md
+.claude/
+/round*.png
+src/app/fonts/
