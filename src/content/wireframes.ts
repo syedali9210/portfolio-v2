@@ -26,7 +26,7 @@ export const traceWires: Wire[] = [
   },
   {
     title: "Timeline",
-    note: "Iterations run down the middle, newest first; each kind of change gets its own card with before and after.",
+    note: "Iterations run down the middle, newest first, and each kind of change gets its own card with before and after.",
     frame: "desktop",
     items: [
       { k: "btn", x: 66, y: 5, w: 28, h: 6 },
@@ -70,7 +70,7 @@ export const traceWires: Wire[] = [
   },
   {
     title: "Case study",
-    note: "Questions on the left with how much is answered; each answer shows the evidence it came from.",
+    note: "Questions on the left with how much is answered, and each answer shows the evidence it came from.",
     frame: "desktop",
     items: [
       { k: "rule", x: 10, y: 14, w: 26 },
@@ -155,7 +155,7 @@ export const engineWires: Wire[] = [
   },
   {
     title: "Lab",
-    note: "Where the engine learns taste: new films to keep or pass, template ideas, and the rulebook it improves by.",
+    note: "Where I review new films and template ideas, and keep the rulebook they follow.",
     frame: "desktop",
     items: [
       { k: "text", x: 10, y: 10, w: 16, t: "Lab" },
@@ -196,7 +196,7 @@ export const kiprunWires: Wire[] = [
   },
   {
     title: "The range",
-    note: "Pick a colour and the shoe changes; the buy link follows it, because women's colourways are separate products.",
+    note: "Pick a colour and the shoe changes. The buy link follows it, because women's colourways are separate products.",
     frame: "phone",
     items: [
       { k: "text", x: 8, y: 14, w: 40, t: "The range" },
@@ -276,7 +276,7 @@ export const kodexWires: Wire[] = [
   },
   {
     title: "Navigation",
-    note: "The menu reorganised around intent: products, industries and integrations, each a short column.",
+    note: "The menu reorganised around what people came for: products, industries and integrations, each a short column.",
     frame: "desktop",
     items: [
       { k: "text", x: 10, y: 8, w: 16, t: "Kodex" },
@@ -348,7 +348,7 @@ export const uniqkeyWires: Wire[] = [
   },
   {
     title: "The risk",
-    note: "What a breach costs a business, in three cards: urgency without a wall of jargon.",
+    note: "What a breach costs a business, in three cards, without a wall of jargon.",
     frame: "desktop",
     items: [
       { k: "text", x: 46, y: 12, w: 68 },
@@ -421,7 +421,7 @@ export const aslWires: Wire[] = [
   },
   {
     title: "The episodes",
-    note: "Five league cards dealt from a pile; on a phone they become a row you swipe.",
+    note: "Five league cards dealt from a pile. On a phone they become a row you swipe.",
     frame: "phone",
     items: [
       { k: "text", x: 12, y: 18, w: 76, t: "Welcome to the anime world" },
@@ -455,7 +455,7 @@ export const aslWires: Wire[] = [
   },
   {
     title: "The line-up",
-    note: "The league names stacked large; scroll steps through them and the product follows.",
+    note: "The league names stacked large. Scroll steps through them and the product follows.",
     frame: "phone",
     items: [
       { k: "text", x: 26, y: 20, w: 48, t: "Crick-Stryke" },

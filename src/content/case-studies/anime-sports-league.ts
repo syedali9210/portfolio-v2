@@ -6,13 +6,13 @@ const dir = "/case-studies/anime-sports-league";
 export const animeSportsLeague: CaseStudy = {
   slug: "anime-sports-league",
   title: "Anime Sports League",
-  tagline: "Five sports, ==five anime leagues==.",
+  tagline: "A flat poster, and a brief for ==a world you scroll into==.",
   theme: { deep: "#042c85", mid: "#fc4b6c", light: "#f0a60f", highlight: "#ffd36b" },
   hero: { frame: "phone", picture: { src: `${dir}/hero-phone.webp`, alt: "The poster on a phone" } },
   kind: "Web",
   year: "2026",
   summary:
-    "A Decathlon India campaign that turns five sports into five anime leagues, each with its own tee. I designed and built the campaign site around the illustrations.",
+    "Decathlon India's campaign turns five sports into five anime leagues, each with its own tee. I designed and built the campaign site around Jolly Yun Shann's illustrations.",
   meta: [
     { label: "Role", value: "Web Design, Motion, Development" },
     { label: "Client", value: "Decathlon India" },
@@ -27,7 +27,7 @@ export const animeSportsLeague: CaseStudy = {
     problem:
       "A Decathlon campaign that turns five sports into five anime leagues needed a site, but its artwork arrived as flat traced pictures that couldn't move.",
     approach:
-      "The poster cut into 15 layers that part as you scroll, a deck of league cards that deals itself, the tees and the line-up, all timed against a reference site.",
+      "I cut the poster into 15 layers that part as you scroll, built a deck of league cards that deals itself, and timed the motion against a reference site.",
     result:
       "Built for Decathlon India in four weeks: 1,732 traced paths became 15 moving layers, and the card art went from 3 MB to 310 kB.",
   },
@@ -48,12 +48,15 @@ export const animeSportsLeague: CaseStudy = {
     links: [],
   },
   cover: { src: `${dir}/hero.webp`, alt: "The Anime Sports League poster" },
+  closing: [
+    "That's all six.",
+    "Thank you for reading this far. The next card takes you back to where it started.",
+  ],
   blocks: [
     {
       type: "immersive",
       quick: true,
       picture: { src: `${dir}/hero.webp`, alt: "The framed Anime Sports League poster" },
-      caption: "The framed poster, the first thing on the page.",
     },
     {
       type: "section",
@@ -62,28 +65,30 @@ export const animeSportsLeague: CaseStudy = {
       eyebrow: "The problem",
       title: "One ==flat picture==",
       body: [
-        "The campaign's art is Jolly Yun Shann's, and it arrived traced: the poster was one frame of 1,732 unnamed paths, no layers, no names. A site that only showed it would be a poster with a scroll bar.",
-        "The brief wanted a world you scroll into: the scene parts, the leagues deal themselves out like cards, and every tee leads to its product.",
+        "The campaign's art is by Jolly Yun Shann, and it arrived traced. The poster was a single frame of 1,732 unnamed paths, with no layers and no names. A site that only showed it would be a poster with a scroll bar.",
+        "The brief wanted a world you scroll into, where the scene parts, the leagues deal themselves out like cards, and every tee leads to its product. So before anything else, I had to work out how to make a flat picture move.",
       ],
     },
     {
       type: "illustration",
       src: "/illustrations/theatre.html",
       title: "A picture, cut into layers",
-      note: "Move along it: the layers part as you go, the nearest one lit, the way the poster was cut into layers that move on their own.",
+      note: "Move along it. The layers part as you go and the nearest one lights up, the way the poster was cut into layers that move on their own.",
     },
     {
       type: "section",
       id: "business",
       title: "What Decathlon ==needed from it==",
-      body: [],
+      body: [
+        "Under all the motion, the site still had three plain commercial jobs.",
+      ],
     },
     {
       type: "alignment",
       items: [
         { goal: "Turn the campaign into tee and cap sales", design: "Every poster leads to its own tee, EXPLORE opens the garment's own page, and the caps got pages of their own.", signal: "Visits to the tee and cap pages from the campaign." },
-        { goal: "Know the visits came from the campaign", design: "Every product link, in the tees, the catalogue and the line-up, carries the campaign's UTM tags.", signal: "Campaign-tagged visits in Decathlon's analytics." },
-        { goal: "Credit the collaboration", design: "Decathlon x Jolly Yun Shann on the footer boards, and the art moves without being redrawn.", signal: "The credit sits on every footer." },
+        { goal: "Know the visits came from the campaign", design: "Every product link, across the tees, the catalogue and the line-up, carries the campaign's UTM tags.", signal: "Campaign-tagged visits in Decathlon's analytics." },
+        { goal: "Credit the collaboration", design: "Decathlon x Jolly Yun Shann sits on the footer boards, and the art moves without being redrawn.", signal: "The credit appears on every footer." },
       ],
     },
     {
@@ -94,8 +99,10 @@ export const animeSportsLeague: CaseStudy = {
     {
       type: "section",
       id: "constraints",
-      title: "What I had to ==work within==",
-      body: [],
+      title: "Someone else's art, ==on a mid-range phone==",
+      body: [
+        "I couldn't redraw the art, and all of it had to run on the phones people actually own.",
+      ],
     },
     {
       type: "tradeoffs",
@@ -103,14 +110,14 @@ export const animeSportsLeague: CaseStudy = {
         {
           kind: "Content",
           constraint: "The art is Jolly Yun Shann's, and it arrived flat.",
-          chose: "Cut it by paint order into 15 layers, and measure which paths are which before moving any.",
-          cost: "What can't move cleanly stays still.",
+          chose: "I cut it by paint order into 15 layers, and measured which paths were which before moving any.",
+          cost: "Whatever can't move cleanly stays still.",
         },
         {
           kind: "Performance",
           constraint: "Moving traced art on a mid-range phone.",
-          chose: "Layers sit on the GPU only while they move; the hero had been holding 19 at once.",
-          cost: "The hero's paths still weigh ~281 kB gzipped.",
+          chose: "Layers sit on the GPU only while they move. The hero had been holding 19 at once.",
+          cost: "The hero's paths still weigh about 281 kB gzipped.",
         },
       ],
     },
@@ -120,7 +127,9 @@ export const animeSportsLeague: CaseStudy = {
       entry: "draw",
       eyebrow: "Design process",
       title: "Four weeks, ==51 commits==",
-      body: [],
+      body: [
+        "The first question was whether the poster could move at all, so that came before any section.",
+      ],
     },
     {
       type: "process",
@@ -157,7 +166,7 @@ export const animeSportsLeague: CaseStudy = {
           phase: "Ship",
           kind: "box",
           title: "Hand it over",
-          text: "Page views and Web Vitals wired in, then handed to Decathlon's test address.",
+          text: "Page views and Web Vitals were wired in, then the site went to Decathlon's test address.",
           made: "served from Decathlon's test address on 21 September 2026",
         },
       ],
@@ -174,21 +183,21 @@ export const animeSportsLeague: CaseStudy = {
       title: "The ==episode deck==",
       body: [
         "The five league cards start as a pile and deal themselves into a row, each turning over to reveal its league as it lands.",
-        "The section holds still while the deck deals; with reduced motion, it's simply dealt, face up.",
+        "The section holds still while the deck deals. With reduced motion, it's simply dealt, face up.",
       ],
     },
     {
       type: "illustration",
       src: "/illustrations/deck.html",
       title: "Five cards, one in hand",
-      note: "Point at a card: it rises out of the fan and the others lean away in turn, the way the site deals its five leagues.",
+      note: "Point at a card and it rises out of the fan while the others lean away, the way the site deals its five leagues.",
     },
     {
       type: "section",
       id: "timing",
       title: "Timing, ==measured==",
       body: [
-        "The scroll-out is timed off yesnowww.com, the site the frame was modelled on: it starts on the first pixel of scroll, runs linear, and plays as three overlapping beats.",
+        "I didn't guess the scroll-out. I timed it off yesnowww.com, the site the frame was modelled on. It starts on the first pixel of scroll, runs linear, and plays as three overlapping beats.",
       ],
     },
     {
@@ -208,16 +217,18 @@ export const animeSportsLeague: CaseStudy = {
     {
       type: "section",
       id: "decisions",
-      title: "The calls I made, and ==what I passed on==",
-      body: [],
+      title: "Three decisions about ==what moves==",
+      body: [
+        "Traced art is unforgiving. The hardest decisions on this project were about what to leave still.",
+      ],
     },
     {
       type: "decisions",
       items: [
         {
           title: "What goes into the code",
-          chose: "Only the art that moves, the hero's 15 layers, as live paths. The episode cards load as pictures.",
-          why: "Animating a path means it has to be in the page; art that never moves doesn't.",
+          chose: "Only the art that moves, the hero's 15 layers, goes in as live paths. The episode cards load as pictures.",
+          why: "Animating a path means it has to be in the page. Art that never moves doesn't.",
           considered: [
             { option: "Inlining all the art", why: "Simpler, but the cards alone would add 1.3 MB to every visit." },
           ],
@@ -225,7 +236,7 @@ export const animeSportsLeague: CaseStudy = {
         {
           title: "What moves",
           chose: "Only what moves cleanly. The football stays still.",
-          why: "Traced art breaks when half of something moves; a broken detail reads worse than a still one.",
+          why: "Traced art breaks when half of something moves, and a broken detail reads worse than a still one.",
           considered: [
             { option: "Moving the football with the kick", why: "Its panels are merged with the leg in the trace, so half a ball would move." },
           ],
@@ -233,7 +244,7 @@ export const animeSportsLeague: CaseStudy = {
         {
           title: "The flames",
           chose: "Flames that hold still, with each prop as one tween.",
-          why: "The page's motion should be the scroll and the deck, not a flicker the phone pays for on every frame.",
+          why: "The motion should come from the scroll and the deck, not from a flicker the phone pays for on every frame.",
           considered: [
             { option: "Flickering flames on every prop", why: "About 80 tweens running at once, on every frame." },
           ],
@@ -245,13 +256,13 @@ export const animeSportsLeague: CaseStudy = {
       id: "system",
       title: "The art is ==the architecture==",
       body: [
-        "The artwork decides everything downstream: its split decides the layers, and the layers decide the bundle and the scroll.",
+        "The artwork decides everything downstream. Its split decides the layers, and the layers decide the bundle and the scroll.",
       ],
     },
     {
       type: "system",
       title: "How the site's parts depend on each other",
-      note: "Point at a part, or tab to it: what a change to it reaches lights up.",
+      note: "Point at a part, or tab to it, and what a change to it reaches lights up.",
       parts: [
         { id: "art", label: "Traced artwork", note: "The poster as one frame of 1,732 unnamed paths, and the card art beside it.", moves: ["assets"] },
         { id: "products", label: "Prices and links", note: "Tees at 799, caps at 699; every link tagged with the campaign's UTM parameters.", moves: ["tees", "lineup"] },
@@ -310,14 +321,14 @@ export const animeSportsLeague: CaseStudy = {
       type: "illustration",
       src: "/illustrations/rail.html",
       title: "A tee for every league",
-      note: "Point at a tee: it hangs straight and lifts, and the others lean away. Each of the five leagues has its own.",
+      note: "Point at a tee and it hangs straight and lifts, while the others lean away. Each of the five leagues has its own.",
     },
     {
       type: "section",
       id: "results",
       entry: "wipe",
       eyebrow: "Results",
-      title: "What it shipped",
+      title: "Lighter, and ==still moving==",
       body: [],
     },
     {
@@ -335,8 +346,8 @@ export const animeSportsLeague: CaseStudy = {
       id: "outcomes",
       title: "Where it stands",
       body: [
-        "The site was built for Decathlon India and, since 21 September 2026, served from Decathlon's test address with page views, Web Vitals and UTM-tagged links to every product.",
-        "Next: a lighter hero before the public launch.",
+        "I built the site for Decathlon India. Since 21 September 2026 it has been served from Decathlon's test address, with page views, Web Vitals and UTM-tagged links to every product.",
+        "Next, it needs a lighter hero before the public launch.",
       ],
     },
   ],

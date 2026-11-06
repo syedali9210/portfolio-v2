@@ -51,7 +51,7 @@ function Work({ slug, side, win }: (typeof ROWS)[number]) {
         {/* eslint-disable-next-line @next/next/no-img-element -- hard-edged dots, a few kB, shown as they were baked */}
         <img className="wk-field" src={`/stamps/field-${slug}.webp`} alt="" loading="lazy" decoding="async" draggable={false} />
         <div className="wk-window" data-fly="screen" style={{ "--x": `${win[0]}%`, "--y": `${win[1]}%`, "--w": `${win[2]}%`, aspectRatio: study.card ? "16 / 9" : `${shot.width} / ${shot.height}` } as CSSProperties}>
-          {study.card ? <Loop src={study.card.video} poster={study.card.poster} className="wk-shot" /> : <Image quality={88} src={study.cover.src} alt="" {...shot} sizes="(min-width: 1024px) 44vw, 70vw" className="wk-shot" />}
+          {study.card ? <Loop src={study.card.video} poster={study.card.poster} className="wk-shot" /> : <Image quality={90} src={study.cover.src} alt="" {...shot} sizes="(min-width: 1024px) 44vw, 70vw" className="wk-shot" />}
         </div>
       </div>
       {side.startsWith("wide") && <p className="wk-claim font-serif">{line}</p>}
@@ -90,7 +90,7 @@ const MENU = "relative inline-flex h-[28.5px] w-fit items-center font-serif text
 /** The menu: a column on the first screen's grid. Point at a word and its page's stone comes up beside it; press it and the stone flies there. */
 function Menu() {
   return (
-    <nav aria-label="Main" className="flex flex-wrap gap-x-3.5 lg:flex-col">
+    <nav aria-label="Main" className="flex flex-wrap gap-x-text lg:flex-col">
       <a href="#work" className={`${MENU} italic`}>
         <InkWord text="Work" />
       </a>
@@ -140,27 +140,27 @@ export function Home() {
               <a href="#top" className={`${label} text-fg`}>
                 <span aria-hidden="true">✦ </span>Syed Ali
               </a>
-              <p className={`${label} mt-[14px] max-w-[110px] text-body max-lg:hidden`}>Product designer &amp; design engineer</p>
+              <p className={`${label} mt-caption max-w-[110px] text-body max-lg:hidden`}>Product designer &amp; design engineer</p>
             </div>
             <div data-boot style={b(1)} className="hero-menu">
               <p className={`${label} text-label/60 max-lg:hidden`}>Menu</p>
-              <div className="lg:mt-[17px]">
+              <div className="lg:mt-caption">
                 <Menu />
               </div>
             </div>
             <div data-boot style={b(1)} className="hero-contact">
               <p className={`${label} text-label/60`}>Contact</p>
-              <a href={GITHUB} target="_blank" rel="noopener" className={`${label} inline-flex items-center gap-1 text-fg underline-offset-4 hover:underline`}>
+              <a href={GITHUB} target="_blank" rel="noopener" className={`${label} inline-flex items-center gap-label text-fg underline-offset-4 hover:underline`}>
                 GitHub <Icon name="arrow-up-right" size={11} />
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </div>
             <div data-boot style={b(2)} className="hero-stamps">
               <p className={`${label} text-label/60`}>Stamps</p>
-              <div className="mt-[17px] max-lg:mt-2">
+              <div className="mt-caption max-lg:mt-note">
                 <StampTrigger />
               </div>
-              <div className="mt-[34px] flex gap-1.5 max-lg:mt-0 max-lg:ml-auto">
+              <div className="mt-lead flex gap-note max-lg:mt-0 max-lg:ml-auto">
                 <SoundToggle className="hero-toggle" />
                 <ThemeToggle plain className="hero-toggle" />
               </div>
@@ -170,22 +170,22 @@ export function Home() {
             </h1>
             <div data-boot style={b(3)} className="hero-profile">
               <p className={`${label} text-label/60`}>Profile</p>
-              <p className="mt-[13px] text-[14px] leading-[1.5] text-body max-lg:mt-2">
-                Syed Ali <span className="font-serif text-[15px] text-label italic">/sai-yed&ensp;ah-lee/</span> is a product designer and design engineer.
+              <p className="mt-caption text-small text-body max-lg:mt-note">
+                I&apos;m Syed Ali <span className="font-serif text-[15px] whitespace-nowrap text-label italic">/sai-yed&ensp;ah-lee/</span>, a product designer and design engineer.
               </p>
-              <p className="mt-[20px] text-[14px] leading-[1.5] text-body max-lg:mt-2">
-                I design products and ship them in code: tools of my own, like <Chip slug="trace">Trace</Chip> and <Chip slug="animation-engine">Animation Engine</Chip>, and sites for{" "}
-                <Chip slug="kiprun">Decathlon</Chip> and <Chip slug="kodex">Basenine</Chip>.
+              <p className="mt-text text-small text-body max-lg:mt-note">
+                I design products and build them in code: tools of my own, like <Chip slug="trace">Trace</Chip> and <Chip slug="animation-engine">Animation Engine</Chip>, and sites for{" "}
+                <Chip slug="kiprun">Decathlon</Chip> and <Chip slug="kodex">Basenine&apos;s clients</Chip>.
               </p>
             </div>
             <div data-boot style={b(4)} className="hero-now">
               <p className={`${label} text-label/60`}>Now</p>
-              <p className="mt-[13px] text-[14px] leading-[1.5] text-body max-lg:mt-2">Building Trace and Animation Engine.</p>
-              <p className="mt-[20px] flex items-center gap-2 text-[14px] leading-[1.5] text-body max-lg:mt-1.5">
+              <p className="mt-caption text-small text-body max-lg:mt-note">Building Trace and Animation Engine.</p>
+              <p className="mt-text flex items-center gap-note text-small text-body max-lg:mt-note">
                 <span className="live-dot relative size-1.5 shrink-0 rounded-full bg-live" aria-hidden="true" />
                 Open to design engineer roles
               </p>
-              <p className={`${label} mt-[20px] text-label max-lg:mt-2`}>
+              <p className={`${label} mt-text text-label max-lg:mt-note`}>
                 Bengaluru · <Clock />
               </p>
             </div>
@@ -204,19 +204,19 @@ export function Home() {
             </p>
             <a href="#work" className="hero-card">
               <span className="font-mono text-[9px] leading-none tracking-[0.08em] text-label uppercase">View all →</span>
-              <span className="mt-2 block font-serif text-[72px] leading-[1.1] tracking-[-0.02em] text-fg">Work</span>
-              <span className="mt-1 block max-w-[170px] text-[12px] leading-[1.35] text-body">Six projects, from tools of my own to sites for Decathlon and Basenine.</span>
+              <span className="mt-note block font-serif text-[72px] leading-[1.1] tracking-[-0.02em] text-fg">Work</span>
+              <span className="mt-label block max-w-[170px] text-[12px] leading-[1.35] text-body">Six projects: two tools of my own and four client sites.</span>
             </a>
           </div>
         </section>
 
         {/* The work inside Abhijit Rout's dome: the colour rises into white, the projects sit on the white (ink in the dark theme),
             and the mirrored dome brings the page back. */}
-        <div className="pt-[clamp(56px,6vw,104px)]">
+        <div className="pt-section">
           <Dome />
         </div>
         <div className="dome-zone">
-          <section id="work" aria-labelledby="work-title" className={`scroll-mt-0 py-[clamp(40px,5vw,80px)] ${FRAME}`}>
+          <section id="work" aria-labelledby="work-title" className={`scroll-mt-0 py-block ${FRAME}`}>
             <WorkFilter
               title={
                 <h2 id="work-title" className="font-serif">
@@ -238,9 +238,9 @@ export function Home() {
         <Dome after />
       </main>
 
-      <footer className={`mt-[clamp(48px,6vw,96px)] flex h-16 items-center justify-between border-t border-line ${FRAME}`}>
+      <footer className={`flex h-16 items-center justify-between border-t border-line ${FRAME}`}>
         <p className={`${label} text-label`}>© 2026 Syed Ali</p>
-        <nav aria-label="Pages" className="flex gap-6 max-lg:hidden">
+        <nav aria-label="Pages" className="flex gap-lead max-lg:hidden">
           {PLACES.map((p) => (
             <PageLink key={p.href} href={p.href} className={`${label} text-label transition-colors hover:text-ink`} preload={`/stamps/${p.stone}.webp`}>
               {p.word}

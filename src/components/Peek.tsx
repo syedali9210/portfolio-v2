@@ -23,7 +23,7 @@ export function Peek() {
       if (t && !on) {
         on = true;
         [cx, cy] = [x, y];
-        setSrc(`/_next/image?url=${encodeURIComponent(t.dataset.peek!)}&w=640&q=75`);
+        setSrc(`/_next/image?url=${encodeURIComponent(t.dataset.peek!)}&w=640&q=90`);
         el.classList.add("on");
       } else if (!t && on) {
         on = false;

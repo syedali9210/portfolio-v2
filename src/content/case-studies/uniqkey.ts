@@ -7,13 +7,13 @@ const dir = "/case-studies/uniqkey";
 export const uniqkey: CaseStudy = {
   slug: "uniqkey",
   title: "Uniqkey",
-  tagline: "Breach risk that ==feels real== enough to act on.",
+  tagline: "Making breach risk feel ==real enough to act on==.",
   theme: { deep: "#0c3a3f", mid: "#56c79a", light: "#9ce9c3", highlight: "#a8eccb" },
   hero: { frame: "screen", picture: { src: `${dir}/uniqkey-screenshot.png`, alt: "The Uniqkey Data Breach Monitoring page" } },
   kind: "Web",
   year: "2026",
   summary:
-    "Designed a landing page that makes data breach risk feel real enough for businesses to actually act on, instead of more jargon to tune out.",
+    "Uniqkey is a European password and access management platform. At Basenine, I designed the landing page for its Data Breach Monitoring feature, so the risk feels real enough for a business to act on, instead of more jargon to tune out.",
   meta: [
     { label: "Role", value: "Web Design" },
     { label: "Studio", value: "Basenine, 2026" },
@@ -27,9 +27,9 @@ export const uniqkey: CaseStudy = {
     problem:
       "Data breach monitoring is technical, and the page explaining it overwhelmed the people who decide whether to buy it.",
     approach:
-      "One focused landing page: why a breach matters, what it costs, what the feature does in cards, and proof before the call to action.",
+      "One focused landing page, ordered by the buyer's questions: why a breach matters, what it could cost, what the feature does, and who else trusts it.",
     result:
-      "One clear journey from the problem to booking a demo.",
+      "One clear path from the problem to booking a demo.",
   },
   status: {
     title: "Uniqkey at Basenine",
@@ -48,15 +48,20 @@ export const uniqkey: CaseStudy = {
     links: [],
   },
   cover: { src: `${dir}/uniqkey-screenshot.png`, alt: "The Uniqkey Data Breach Monitoring page" },
+  closing: [
+    "Phew... that was a lot of breach talk.",
+    "Thanks for sticking around. Let's move on to something a little less alarming.",
+  ],
   blocks: [
     {
       type: "section",
       id: "challenge",
       entry: "rise",
       eyebrow: "The problem",
-      title: "A topic that overwhelms",
+      title: "A topic people ==tune out==",
       body: [
-        "Breach monitoring is technical, and it easily overwhelms. Following a visitor down the old page, I found five issues; each became a goal.",
+        "Data breach monitoring is technical, and the old page explained it that way. The people who decide whether to buy it aren't specialists, so the page was losing them before it reached the point.",
+        "I followed a visitor down the page and marked every place a non-technical buyer would stop reading. I found five issues, and each one became a goal.",
       ],
     },
     {
@@ -65,8 +70,8 @@ export const uniqkey: CaseStudy = {
       items: [
         { title: "The technical messaging overwhelmed", text: "Goal: make security make sense to non-technical decision makers." },
         { title: "The value wasn't obvious", text: "Goal: say why breach monitoring matters before explaining how it works." },
-        { title: "The page had no narrative", text: "Goal: a logical flow that explains the problem first, then the solution." },
-        { title: "The benefits were easy to miss", text: "Goal: visual hierarchy and credibility cues that reinforce confidence." },
+        { title: "The page had no narrative", text: "Goal: a logical flow that explains the problem first and the solution second." },
+        { title: "The benefits were easy to miss", text: "Goal: hierarchy and proof that give the reader confidence." },
         { title: "The calls to action were weak", text: "Goal: a clearer path to trying the feature or booking a demo." },
       ],
     },
@@ -74,33 +79,35 @@ export const uniqkey: CaseStudy = {
       type: "illustration",
       src: "/illustrations/vault.html",
       title: "A scan across the keys",
-      note: "A sweep runs across the key plate on its own; move the pointer and you scan it yourself, each key lighting and fading behind you, the way monitoring checks every credential.",
+      note: "A sweep runs across the key plate on its own. Move the pointer and you scan it yourself, each key lighting up and fading behind you, the way monitoring checks every credential.",
     },
     {
       type: "section",
       id: "business",
       title: "What Uniqkey ==needed from it==",
       body: [
-        "The page sells one feature, Data Breach Monitoring, to the person who signs for it rather than the one who configures it.",
+        "The page sells one feature, Data Breach Monitoring, to the person who signs for it and not the person who configures it. That one fact decided the writing, the order and the design.",
       ],
     },
     {
       type: "alignment",
       items: [
         { goal: "Sell to decision makers, not specialists", design: "Why it matters comes first, in plain words, before how it works.", signal: "Visitors who read on past the hero." },
-        { goal: "Urgency without fear", design: "The cost of a breach as structured content and visuals.", signal: "Visitors who reach the features after the risk." },
+        { goal: "Urgency without fear", design: "The cost of a breach, shown as structured content and visuals.", signal: "Visitors who reach the features after the risk section." },
         { goal: "Trust for a security vendor", design: "Testimonials and certifications before the call to action.", signal: "Demo requests after the proof." },
       ],
     },
     {
       type: "statement",
-      text: "Users don't need every technical detail upfront. They need ==clarity, confidence==, and a clear reason the product matters.",
+      text: "A buyer doesn't need every technical detail upfront. They need ==a clear reason to care==.",
     },
     {
       type: "section",
       id: "constraints",
-      title: "What I had to ==work within==",
-      body: [],
+      title: "One page, ==and no room to waste==",
+      body: [
+        "Everything had to fit in a single scroll, without losing the technical credibility a security product depends on.",
+      ],
     },
     {
       type: "tradeoffs",
@@ -108,14 +115,14 @@ export const uniqkey: CaseStudy = {
         {
           kind: "Scope",
           constraint: "One landing page, for one feature.",
-          chose: "Everything had to land in one scroll: the problem, the cost, the features, the proof and the action.",
-          cost: "Detail that didn't answer one of the four questions was left out.",
+          chose: "The problem, the cost, the features, the proof and the action all had to land in one scroll.",
+          cost: "Any detail that didn't answer one of the four questions was left out.",
         },
         {
           kind: "Credibility",
           constraint: "Simplify a technical topic without losing technical credibility.",
-          chose: "Plain words up top; the technical detail kept in the feature cards, short and specific.",
-          cost: "A specialist has to reach the cards before the detail they came for.",
+          chose: "Plain words up top, with the technical detail kept in the feature cards, short and specific.",
+          cost: "A specialist has to reach the cards before finding the detail they came for.",
         },
       ],
     },
@@ -125,7 +132,9 @@ export const uniqkey: CaseStudy = {
       entry: "draw",
       eyebrow: "Design process",
       title: "Ordered by ==the buyer's questions==",
-      body: [],
+      body: [
+        "The real work was in the order. A buyer asks four questions, so the page answers them one at a time.",
+      ],
     },
     {
       type: "process",
@@ -155,7 +164,7 @@ export const uniqkey: CaseStudy = {
           phase: "Design",
           kind: "box",
           title: "Rebuild each section around its answer",
-          text: "Each section rebuilt around its answer, with proof before the ask.",
+          text: "I rebuilt each section around its answer, with the proof placed before the ask.",
           made: "the landing page",
         },
       ],
@@ -165,7 +174,7 @@ export const uniqkey: CaseStudy = {
       id: "wireframes",
       title: "One page, four questions",
       body: [
-        "The page in four steps, each answering the next question a security buyer asks: why should I care, what could it cost, what does it do, and who else trusts it.",
+        "The page runs in four steps, each answering the next question a security buyer asks. Why should I care? What could it cost? What does it do? Who else trusts it?",
       ],
     },
     { type: "wireframes", screens: uniqkeyWires, over: { src: `${dir}/uniqkey-screenshot.png`, alt: "The Uniqkey landing page" } },
@@ -174,69 +183,68 @@ export const uniqkey: CaseStudy = {
       id: "hero-experience",
       entry: "focus",
       eyebrow: "The redesign",
-      title: "Why should I care",
+      title: "Why should I care?",
       body: [
-        "The hero leads with why a breach matters, not how monitoring works: the person who signs needs a reason before a mechanism.",
+        "The hero leads with why a breach matters, before it says anything about how monitoring works. The person who signs needs a reason before a mechanism.",
       ],
     },
     { type: "media", picture: { src: `${dir}/uk-hero-image.png`, alt: "Uniqkey hero redesign" } },
     {
       type: "section",
       id: "risk",
-      title: "What could it cost",
+      title: "What could it cost?",
       body: [
-        "What a breach could cost the business, as structured content and visuals. Cost makes the risk real without turning it into fear.",
+        "This section shows what a breach could cost the business, through structured content and visuals. Putting a cost on it makes the risk real without turning it into a scare.",
       ],
     },
     {
       type: "gallery",
       fit: "contain",
       pictures: [
-        { src: `${dir}/uk-risk-frame2.png`, alt: "A breach risk card" },
-        { src: `${dir}/uk-risk-frame3.png`, alt: "A breach risk card" },
-        { src: `${dir}/uk-risk-frame1.png`, alt: "The risk section" },
+        { src: `${dir}/uk-risk-frame2.png`, alt: "Detect: continuous monitoring against known breach databases" },
+        { src: `${dir}/uk-risk-frame3.png`, alt: "Respond: an alert on a phone that credentials have been compromised" },
+        { src: `${dir}/uk-risk-frame1.png`, alt: "Document: breach totals and an audit trail" },
       ],
     },
     {
       type: "illustration",
       src: "/illustrations/dominoes.html",
       title: "One push, then the rest",
-      note: "Point at a domino: it and every one after it fall in turn, the way one exposed credential can lead to the next.",
+      note: "Point at a domino and it falls, along with every one after it, the way one exposed credential can lead to the next.",
     },
     {
       type: "section",
       id: "features",
-      title: "What does it do",
+      title: "What does it do?",
       body: [
-        "Modular cards with icons and short lines, so the features can be scanned and compared instead of dug out of copy.",
+        "The features used to be buried in long blocks of copy. I rebuilt them as modular cards with icons and short lines, so they can be scanned and compared.",
       ],
     },
     {
       type: "gallery",
       fit: "contain",
       pictures: [
-        { src: `${dir}/uk-feature-frame4.png`, alt: "A feature card" },
-        { src: `${dir}/uk-feature-frame2.png`, alt: "A feature card" },
-        { src: `${dir}/uk-feature-frame1.png`, alt: "The feature section" },
-        { src: `${dir}/uk-feature-frame3.png`, alt: "The full feature breakdown" },
+        { src: `${dir}/uk-feature-frame4.png`, alt: "The app's sidebar" },
+        { src: `${dir}/uk-feature-frame1.png`, alt: "The table of affected employees" },
+        { src: `${dir}/uk-feature-frame3.png`, alt: "An employee's breach details" },
+        { src: `${dir}/uk-feature-frame2.png`, alt: "A dialog confirming a domain's removal from monitoring" },
       ],
     },
     {
       type: "section",
       id: "trust",
-      title: "Who else ==trusts== it",
+      title: "Who else ==trusts== it?",
       body: [
         "Testimonials and certifications come before the call to action, so the proof lands before the ask.",
       ],
     },
     {
       type: "gallery",
-      fit: "contain",
+      fit: "row",
       pictures: [
-        { src: `${dir}/uk-trust-image1.png`, alt: "A certification badge" },
-        { src: `${dir}/uk-trust-image2.png`, alt: "A testimonial card" },
+        { src: `${dir}/uk-trust-image1.png`, alt: "A card on military-grade encryption" },
+        { src: `${dir}/uk-trust-image2.png`, alt: "A card on zero-knowledge architecture" },
       ],
-      tabs: ["Certification", "Testimonial"],
     },
     {
       type: "section",
@@ -266,14 +274,14 @@ export const uniqkey: CaseStudy = {
           { text: "Features as cards to scan and compare" },
           { text: "One path: try the feature or book a demo" },
         ],
-        total: "One journey, to a demo",
+        total: "One path, to a demo",
       },
     },
     {
       type: "illustration",
       src: "/illustrations/keybox.html",
       title: "The hook that's empty",
-      note: "Point at a key: it swings out on its hook. One hook has no key on it: monitoring is noticing what's missing.",
+      note: "Point at a key and it swings out on its hook. One hook has no key on it, because monitoring is about noticing what's missing.",
     },
     {
       type: "section",
@@ -286,11 +294,21 @@ export const uniqkey: CaseStudy = {
     {
       type: "stats",
       quick: true,
+      note: "These numbers describe the page itself, not live traffic.",
       items: [
-        { label: "Journeys through the page", value: "1", note: "From the problem to booking a demo." },
+        { label: "Paths through the page", value: "1", note: "From the problem to booking a demo." },
         { label: "Issues, each made a goal", value: "5", note: "Found by following a visitor down the old page." },
         { label: "Questions it answers, in order", value: "4", note: "Why care, what it costs, what it does, who trusts it." },
         { label: "Ways to act at the end", value: "2", note: "Try the feature, or book a demo." },
+      ],
+    },
+    {
+      type: "section",
+      id: "learned",
+      title: "What I learned",
+      body: [
+        "Designing for cybersecurity taught me that people don't need every technical detail upfront. They need to understand, quickly, why the product matters to them.",
+        "This project made me better at simplifying a complex topic while keeping it accurate, and at writing pages that explain first and ask second.",
       ],
     },
   ],

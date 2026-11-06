@@ -39,7 +39,7 @@ export const archive: ArchiveItem[] = [
   fig("vault", "A scan across the keys", "Uniqkey's breach monitoring, drawn as a sweep."),
   fig("deck", "Five cards, one in hand", "The five leagues of Anime Sports League."),
   fig("stairs", "The design process", "A flight of steps, one per phase, climbed on a loop."),
-  film("trace-launch", "Trace launch film", "Directed by the engine's Artist.", "trace", "launch", "/work/trace"),
+  film("trace-launch", "Trace launch film", "Made with Animation Engine.", "trace", "launch", "/work/trace"),
   film("engine-launch", "Animation Engine launch film", "Exported from its own Studio.", "animation-engine", "engine-launch", "/work/animation-engine"),
   film("kiprun-film", "KIPRUN launch film", "48 seconds, made for the page.", "kiprun", "site-film", "/work/kiprun"),
   film("trace-ui", "Trace, recorded", "A project's timeline, its screens and its checks.", "trace", "trace-ui", "/work/trace"),

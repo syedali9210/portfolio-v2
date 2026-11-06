@@ -12,14 +12,14 @@ import { Video } from "./Video";
 const i = (n: number) => ({ "--i": n }) as CSSProperties;
 const MAIN = "(min-width: 816px) 744px, 100vw";
 
-function Pic({ picture, sizes = MAIN, className, priority }: { picture: Picture; sizes?: string; className?: string; priority?: boolean }) {
-  return <Image quality={90} src={picture.src} alt={picture.alt} {...sizeOf(picture)} sizes={sizes} className={className} priority={priority} />;
+function Pic({ picture, sizes = MAIN, className, style, priority }: { picture: Picture; sizes?: string; className?: string; style?: CSSProperties; priority?: boolean }) {
+  return <Image quality={90} src={picture.src} alt={picture.alt} {...sizeOf(picture)} sizes={sizes} className={className} style={style} priority={priority} />;
 }
 
 
 function Caption({ children }: { children?: string }) {
   if (!children) return null;
-  return <p className="caption mt-4 max-w-[var(--measure)] text-small text-label">{children}</p>;
+  return <p className="caption mt-caption max-w-[var(--measure)] text-small text-label">{children}</p>;
 }
 
 /** A picture on its plate (globals.css .plate): the screen inset on a soft field of the project's colour. */
@@ -168,7 +168,7 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
               <Rich text={block.title} />
             )}
           </h2>
-          <div className={`mt-5 flex flex-col gap-4 empty:hidden ${center ? "mx-auto max-w-[560px]" : ""}`}>
+          <div className={`mt-text flex flex-col gap-text empty:hidden ${center ? "mx-auto max-w-[560px]" : ""}`}>
             {block.body.map((p, n) => (
               <p key={n} data-reveal style={i(n + 1)} className="section-copy text-copy text-body">
                 {p}
@@ -206,7 +206,7 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "immersive": {
       const { width, height } = sizeOf(block.picture);
       return (
-        <Immersive caption={block.caption} aspect={width / height}>
+        <Immersive aspect={width / height}>
           {block.video ? (
             <Video src={block.video} poster={block.picture.src} width={width} height={height} label={block.picture.alt} fill />
           ) : (
@@ -217,34 +217,31 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     }
 
     case "gallery": {
-      const contain = block.fit === "contain";
-      if (block.tabs)
+      if (block.tabs) {
+        const contain = block.fit === "contain";
         return (
           <figure data-reveal>
             <Tabs labels={block.tabs} contain={contain}>
               {block.pictures.map((p) => (
-                <Pic key={p.src} picture={p} className={contain ? "h-auto max-h-full w-auto max-w-full object-contain" : "size-full object-cover object-top"} />
+                // Sized by the plate and capped at the file: left to its intrinsic size, a picture comes out at about half on a 2× screen.
+                <Pic key={p.src} picture={p} className={contain ? "size-full object-contain" : "size-full object-cover object-top"} style={contain ? { maxWidth: sizeOf(p).width, maxHeight: sizeOf(p).height } : undefined} />
               ))}
             </Tabs>
             <Caption>{block.caption}</Caption>
           </figure>
         );
-      const odd = block.pictures.length % 2 === 1;
+      }
       return (
         <figure>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {block.pictures.map((p, n) => (
-              <div
-                key={p.src}
-                data-reveal
-                style={i(n % 2)}
-                className={`plate zoom ${contain ? "flex aspect-[16/10] items-center justify-center" : ""} ${odd && n === block.pictures.length - 1 ? "sm:col-span-2" : ""}`}
-              >
-                <div className={contain ? "flex size-full items-center justify-center" : "shot"}>
-                  <Pic picture={p} sizes="(min-width: 640px) 450px, 100vw" className={contain ? "h-auto max-h-full w-auto max-w-full object-contain" : "block h-auto w-full"} />
+          <div data-reveal className="plate bento" data-fit={block.fit}>
+            {block.pictures.map((p) => {
+              const { width, height } = sizeOf(p);
+              return (
+                <div key={p.src} className="bento-cell" style={{ "--a": (width / height).toFixed(3), "--w": `${width}px`, maxWidth: width } as CSSProperties}>
+                  <Pic picture={p} sizes="(min-width: 640px) 640px, 100vw" className="block h-auto w-full" />
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <Caption>{block.caption}</Caption>
         </figure>
@@ -257,10 +254,10 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
           <h3 data-reveal className="text-center font-serif text-headline text-ink">
             {block.title}
           </h3>
-          <Plate className="zoom mt-8 w-full sm:mt-10">
+          <Plate className="zoom mt-lead w-full">
             <Pic picture={block.picture} className="block h-auto w-full" />
           </Plate>
-          <figcaption data-reveal className="mt-8 max-w-[520px] text-center font-serif text-[clamp(19px,17px+0.4vw,23px)] leading-snug text-body">
+          <figcaption data-reveal className="mt-lead max-w-[520px] text-center font-serif text-[clamp(19px,17px+0.4vw,23px)] leading-snug text-body">
             {block.caption}
           </figcaption>
         </figure>
@@ -277,11 +274,11 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
       return (
         <>
           <DeviceStage screens={block.screens} over={block.over} label={`${block.screens.map((w) => w.title).join(", ")}, as wireframes`} />
-          <dl className={`mx-auto mt-4 grid max-w-[calc(var(--measure)+2*var(--pad-x))] gap-x-8 gap-y-6 px-[var(--pad-x)] ${block.screens.length > 3 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
+          <dl className={`mx-auto mt-text grid max-w-[calc(var(--measure)+2*var(--pad-x))] gap-x-group gap-y-lead px-[var(--pad-x)] ${block.screens.length > 3 ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-3"}`}>
             {block.screens.map((w, n) => (
               <div key={w.title} data-reveal style={i(n)}>
                 <dt className="text-small font-medium text-fg">{w.title}</dt>
-                <dd className="mt-1 text-small text-label">{w.note}</dd>
+                <dd className="mt-label text-small text-label">{w.note}</dd>
               </div>
             ))}
           </dl>
@@ -291,21 +288,21 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "illustration":
       return (
         <figure data-reveal className="mx-auto w-full max-w-[var(--measure)]">
-          <div className="diagram flex justify-center px-4 pt-10 pb-2">
+          <div className="diagram flex justify-center px-text pt-block pb-note">
             <span className="diagram-name">“{block.title}”</span>
             {/* Loaded with the page, not lazily: parsing it mid-scroll cost a dropped frame. Its loop sleeps until it's on screen. */}
             <iframe src={block.src} title={block.title} className="aspect-[5/4] w-full max-w-[520px] border-0 bg-transparent" />
           </div>
-          <figcaption className="mt-3 text-small text-label">{block.note}</figcaption>
+          <figcaption className="mt-caption text-small text-label">{block.note}</figcaption>
         </figure>
       );
 
     case "cards": {
       // The reference's grid of points: a name over its line, side by side, no boxes.
       return (
-        <ul className="mx-auto grid w-full max-w-[var(--measure)] gap-x-8 gap-y-7 sm:grid-cols-2">
+        <ul className="mx-auto grid w-full max-w-[var(--measure)] gap-x-group gap-y-lead sm:grid-cols-2">
           {block.items.map((card, n) => (
-            <li key={card.title} data-reveal style={i(n)} className="flex flex-col gap-1">
+            <li key={card.title} data-reveal style={i(n)} className="flex flex-col gap-label">
               <p className="text-copy font-medium text-ink">{card.title}</p>
               {card.text && <p className="text-copy text-body">{card.text}</p>}
             </li>
@@ -317,24 +314,24 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "statement":
       // A line set on its own, centred, as Bill Guo's case studies pause on a question: no band, no card.
       return (
-        <p id={block.id} data-reveal className="mx-auto max-w-[560px] py-[clamp(16px,3vw,40px)] text-center font-serif text-statement text-ink">
+        <p id={block.id} data-reveal className="mx-auto max-w-[560px] py-text text-center font-serif text-statement text-ink">
           <RichWords text={block.text} />
         </p>
       );
 
     case "stats":
       return (
-        <div className="mx-auto flex w-full max-w-[var(--measure)] flex-col gap-10 sm:gap-12">
+        <div className="mx-auto flex w-full max-w-[var(--measure)] flex-col gap-group">
           {block.note && (
             <p data-reveal className="text-lead text-ink">
               {block.note}
             </p>
           )}
-          <dl className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-group gap-y-lead sm:grid-cols-2">
             {block.items.map((s, n) => (
-              <div key={s.label} data-reveal style={i(n)} className="flex flex-col gap-2 border-t border-line pt-5">
+              <div key={s.label} data-reveal style={i(n)} className="flex flex-col gap-note border-t border-line pt-text">
                 <dt className="text-small text-label">{s.label}</dt>
-                <dd className="overflow-hidden pb-1 font-serif text-statement text-ink">
+                <dd className="overflow-hidden pb-label font-serif text-statement text-ink">
                   <span className="stat-value tabular-nums" style={i(n)}>
                     {s.value}
                   </span>
@@ -351,21 +348,21 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
       // then the phases run across in order, each with what it was for and its output.
       const q = new URLSearchParams({ p: block.steps.map((s) => s.phase).join(","), k: block.steps.map((s) => s.kind).join(",") });
       return (
-        <div className="flex flex-col gap-10">
-          <figure className="diagram flex justify-center px-4 pt-10 pb-2">
+        <div className="flex flex-col gap-group">
+          <figure className="diagram flex justify-center px-text pt-block pb-note">
             <span className="diagram-name">“The process”</span>
             <iframe src={`/illustrations/stairs.html?${q}`} title="The design process, as a flight of steps" className="aspect-[5/4] w-full max-w-[400px] border-0 bg-transparent" />
           </figure>
-          <ol className="grid gap-x-8 gap-y-8 sm:grid-cols-2">
+          <ol className="grid gap-x-group gap-y-lead sm:grid-cols-2">
             {block.steps.map((s, n) => (
-              <li key={s.title} data-reveal style={i(n)} className="flex flex-col gap-1.5 border-t border-line pt-4">
-                <p className="flex items-baseline gap-2 font-mono text-[11px] leading-4 tracking-[0.1em] text-label uppercase">
+              <li key={s.title} data-reveal style={i(n)} className="flex flex-col gap-note border-t border-line pt-text">
+                <p className="flex items-baseline gap-note font-mono text-[11px] leading-4 tracking-[0.1em] text-label uppercase">
                   <span className="tabular-nums">{String(n + 1).padStart(2, "0")}</span>
                   <span>{s.phase}</span>
                 </p>
                 <p className="font-serif text-[18px] leading-[1.45] text-ink">{s.title}</p>
                 <p className="text-copy text-body">{s.text}</p>
-                {s.made && <p className="mt-1 text-small text-label">Output: {s.made}</p>}
+                {s.made && <p className="text-small text-label">Output: {s.made}</p>}
               </li>
             ))}
           </ol>
@@ -376,10 +373,10 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "compare": {
       // Step n of the old way and step n of the new share a row, so each change reads straight across.
       const { before, after } = block;
-      const cols = "sm:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)] sm:gap-x-6";
+      const cols = "sm:grid-cols-[minmax(0,1fr)_24px_minmax(0,1fr)] sm:gap-x-lead";
       const Step = ({ s, now }: { s?: { text: string; time?: string }; now: boolean }) =>
         s ? (
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-label">
             <span className={`sm:hidden text-tag ${now ? "text-fg" : "text-label"}`}>{now ? after.label : before.label}</span>
             <span className={`text-copy ${now ? "text-ink" : "text-label"}`}>{s.text}</span>
             {s.time && <span className="font-mono text-small text-label tabular-nums">{s.time}</span>}
@@ -389,30 +386,30 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
         );
       return (
         <div>
-          <div className={`hidden pb-4 sm:grid ${cols}`}>
-            <p className="flex items-center gap-2 text-small font-medium text-label">
+          <div className={`hidden pb-text sm:grid ${cols}`}>
+            <p className="flex items-center gap-note text-small font-medium text-label">
               <span className="size-2 rounded-full bg-tick" aria-hidden="true" />
               {before.label}
             </p>
             <span />
-            <p className="flex items-center gap-2 text-small font-medium text-fg">
+            <p className="flex items-center gap-note text-small font-medium text-fg">
               <span className="size-2 rounded-full bg-[var(--deep)]" aria-hidden="true" />
               {after.label}
             </p>
           </div>
           <ol>
             {Array.from({ length: Math.max(before.steps.length, after.steps.length) }, (_, n) => (
-              <li key={n} data-reveal style={i(n)} className={`grid gap-3 border-t border-line py-4 sm:items-start ${cols}`}>
+              <li key={n} data-reveal style={i(n)} className={`grid gap-caption border-t border-line py-text sm:items-start ${cols}`}>
                 <Step s={before.steps[n]} now={false} />
-                <Icon name="arrow-right" size={16} className="mt-1 hidden text-label sm:block" />
+                <Icon name="arrow-right" size={16} className="mt-label hidden text-label sm:block" />
                 <Step s={after.steps[n]} now />
               </li>
             ))}
           </ol>
           {(before.total || after.total) && (
-            <div data-reveal className={`grid gap-3 border-t border-fg/25 pt-5 ${cols}`}>
+            <div data-reveal className={`grid gap-caption border-t border-fg/25 pt-lead ${cols}`}>
               <p className="font-serif text-statement text-label">{before.total}</p>
-              <Icon name="arrow-right" size={20} className="mt-3 hidden text-ink sm:block" />
+              <Icon name="arrow-right" size={20} className="mt-caption hidden text-ink sm:block" />
               <p className="font-serif text-statement text-ink">{after.total}</p>
             </div>
           )}
@@ -431,7 +428,7 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
             key: t.constraint,
             cells: [
               <>
-                <span className="mb-1 block font-sans text-small text-label">{t.kind}</span>
+                <span className="mb-label block font-sans text-small text-label">{t.kind}</span>
                 {t.constraint}
               </>,
               t.chose,
@@ -444,7 +441,7 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "decisions":
       return (
         <Table
-          head={["The call", "Went with", "Passed on"]}
+          head={["The decision", "What I chose", "What I ruled out"]}
           rows={block.items.map((d) => ({
             key: d.title,
             cells: [
@@ -465,7 +462,7 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
     case "alignment":
       return (
         <Table
-          head={["What the business needed", "What the design does for it", "How it shows"]}
+          head={["What the business needed", "How the design answers it", "How we'd know"]}
           rows={block.items.map((a) => ({ key: a.goal, cells: [a.goal, a.design, a.signal] }))}
         />
       );
@@ -477,17 +474,17 @@ export function BlockView({ block, center = false }: { block: Block; center?: bo
  * so a section of them stays short. Below sm the rows stack and each cell carries its column's name.
  */
 function Table({ head, rows }: { head: [string, string, string]; rows: { key: string; cells: [ReactNode, ReactNode, ReactNode] }[] }) {
-  const cols = "sm:grid-cols-[minmax(0,4fr)_minmax(0,5fr)_minmax(0,3fr)] sm:gap-8";
+  const cols = "sm:grid-cols-[minmax(0,5fr)_minmax(0,6fr)_minmax(0,5fr)] sm:gap-group";
   return (
     <div>
-      <div className={`hidden pb-4 text-small font-medium text-fg sm:grid ${cols}`}>
+      <div className={`hidden pb-text text-small font-medium text-fg sm:grid ${cols}`}>
         {head.map((h) => (
           <p key={h}>{h}</p>
         ))}
       </div>
       <ol>
         {rows.map((r, n) => (
-          <li key={r.key} data-reveal style={i(n)} className={`grid gap-3 border-t border-line py-5 ${cols}`}>
+          <li key={r.key} data-reveal style={i(n)} className={`grid gap-caption border-t border-line py-text ${cols}`}>
             <div className="font-serif text-[clamp(19px,17px+0.4vw,22px)] leading-snug text-ink">{r.cells[0]}</div>
             <div className="text-copy text-body">
               <span className="font-medium text-fg sm:hidden">{head[1]}: </span>

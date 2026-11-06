@@ -46,10 +46,13 @@ export type Block = Q &
     /** A screenshot or a film. `tall` pictures pan to their foot on hover. */
     | { type: "media"; picture: Picture; video?: string; tall?: boolean; caption?: string }
     /** Leaves the cards: grows from the column to the whole screen as you scroll, holds, then settles back. */
-    | { type: "immersive"; picture: Picture; video?: string; caption?: string }
+    | { type: "immersive"; picture: Picture; video?: string }
     /** A desktop screenshot with the phone version standing in front of it. */
-    /** Pictures side by side (two per row from tablet up). With `tabs` (one label per picture) it's one picture at a time under a pill switch. */
-    | { type: "gallery"; pictures: Picture[]; caption?: string; fit?: "cover" | "contain"; tabs?: string[] }
+    /**
+     * Pictures together. With `tabs` (one label per picture) it's one at a time under a pill switch. Without, they share one plate: "contain" keeps
+     * each picture's shape in rows that fill the plate's width, in the order given; "row" is for small pictures, at their own size and centred.
+     */
+    | { type: "gallery"; pictures: Picture[]; caption?: string; fit?: "cover" | "contain" | "row"; tabs?: string[] }
     /** A serif headline over a screenshot, with a serif caption under it: live text, sharp at any size. */
     | { type: "showcase"; title: string; picture: Picture; caption: string }
     /** A full-width picture with no card around it. */
@@ -112,5 +115,7 @@ export type CaseStudy = {
   cover: Picture;
   /** A short silent loop for the work card on the front page (cut from the launch film), and its first frame. */
   card?: { video: string; poster: string };
+  /** The sign-off above Up next: a line in the serif, then a line that hands the reader to the next case study. */
+  closing?: [string, string];
   blocks: Block[];
 };

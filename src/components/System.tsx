@@ -51,19 +51,19 @@ export function System({ title, note, parts }: { title: string; note: string; pa
   const lit = useMemo(() => (on ? reach(parts, on) : new Set<string>()), [on, parts]);
   const part = parts.find((p) => p.id === on);
 
-  // Lines from the foot of each part to the head of what it moves, measured from the laid-out buttons.
+  // Lines from the foot of each part to the head of what it moves, measured from the laid-out buttons. Offsets, not
+  // getBoundingClientRect: the column is scaled while it scrolls in (.enter), and a line drawn from a scaled box misses its pill.
   useEffect(() => {
     const el = box.current!;
     const measure = () => {
-      const o = el.getBoundingClientRect();
-      const at = (id: string) => el.querySelector<HTMLElement>(`[data-part="${id}"]`)?.getBoundingClientRect();
+      const at = (id: string) => el.querySelector<HTMLElement>(`[data-part="${id}"]`);
       const out: Link[] = [];
       for (const p of parts)
         for (const m of p.moves ?? []) {
           const a = at(p.id), b = at(m);
           if (!a || !b) continue;
-          const x1 = a.left + a.width / 2 - o.left, y1 = a.bottom - o.top;
-          const x2 = b.left + b.width / 2 - o.left, y2 = b.top - o.top;
+          const x1 = a.offsetLeft + a.offsetWidth / 2, y1 = a.offsetTop + a.offsetHeight;
+          const x2 = b.offsetLeft + b.offsetWidth / 2, y2 = b.offsetTop;
           const mid = (y1 + y2) / 2;
           out.push({ from: p.id, to: m, d: `M${x1.toFixed(1)} ${y1.toFixed(1)}C${x1.toFixed(1)} ${mid.toFixed(1)} ${x2.toFixed(1)} ${mid.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}` });
         }
@@ -90,9 +90,9 @@ export function System({ title, note, parts }: { title: string; note: string; pa
             <path key={`flow-${l.from}-${l.to}`} d={l.d} pathLength={1} className="sys-flow" />
           ))}
         </svg>
-        <div className="relative flex flex-col gap-[clamp(44px,6vw,72px)]">
+        <div className="relative flex flex-col gap-block">
           {rows.map((row, r) => (
-            <div key={r} className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
+            <div key={r} className="flex flex-wrap justify-center gap-caption">
               {row.map((p) => (
                 <button
                   key={p.id}
@@ -104,7 +104,7 @@ export function System({ title, note, parts }: { title: string; note: string; pa
                   onFocus={() => setOn(p.id)}
                   onBlur={() => setOn(null)}
                   onClick={() => setOn(on === p.id ? null : p.id)}
-                  className="sys-part rounded-full px-3.5 py-2 text-small font-medium sm:px-4"
+                  className="sys-part rounded-full px-text py-note text-small font-medium"
                 >
                   {p.label}
                 </button>
@@ -113,18 +113,18 @@ export function System({ title, note, parts }: { title: string; note: string; pa
           ))}
         </div>
       </div>
-      <figcaption aria-live="polite" className="mx-auto mt-9 min-h-[64px] max-w-[560px] text-center">
+      <figcaption aria-live="polite" className="mx-auto mt-group min-h-[64px] max-w-[560px] text-center">
         {part ? (
           <>
             <p className="text-small font-medium text-fg">{part.note}</p>
-            <p className="mt-1 text-small text-label">
+            <p className="mt-label text-small text-label">
               {names.length ? `A change here reaches ${names.length} more: ${names.join(", ")}.` : "Nothing else depends on it: a change here stays here."}
             </p>
           </>
         ) : (
           <>
             <p className="text-small font-medium text-fg">{title}</p>
-            <p className="mt-1 text-small text-label">{note}</p>
+            <p className="mt-label text-small text-label">{note}</p>
           </>
         )}
       </figcaption>

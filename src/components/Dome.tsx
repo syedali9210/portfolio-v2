@@ -8,9 +8,10 @@ import { clamp01, onScrollFrame, still } from "./scroll";
  * at its core; on the dark theme his ember and ink). The bell is one small baked picture (scripts/stamps/soft.py), so showing it costs
  * nothing. `after` is the same bell upside down, leading back out to the page, and only scrolls.
  *
- * From 1024 px it unrolls down from its top edge as you scroll. His is an image turned with rotateX from edge-on (89°) to flat with no
- * perspective, which is a vertical scale by cos θ; measured on his page the bell is 0.48, 0.68 and 0.94 of its height after 0.5, 0.75 and
- * 1.3 screens, so the scale here eases out the same way. On a phone it doesn't: see `.dome` in globals.css.
+ * It unrolls down from its top edge as you scroll. His is an image turned with rotateX from edge-on (89°) to flat with no perspective,
+ * which is a vertical scale by cos θ; measured on his page the bell is 0.48, 0.68 and 0.94 of its height after 0.5, 0.75 and 1.3 screens,
+ * so the scale eases out the same way. That's a scroll-driven animation (`.dome` in globals.css): on the compositor, so on a phone it stays
+ * with the finger. Where a browser hasn't got those, the script below does it from 1024 px; a phone there simply sees the bell.
  */
 export function Dome({ after = false }: { after?: boolean }) {
   const band = useRef<HTMLDivElement>(null);
@@ -18,7 +19,7 @@ export function Dome({ after = false }: { after?: boolean }) {
   const foot = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (after || still()) return;
+    if (after || still() || CSS.supports("animation-timeline: view()")) return;
     const narrow = matchMedia("(max-width: 1023px)");
     let last = -1;
     return onScrollFrame(() => {

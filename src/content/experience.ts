@@ -1,6 +1,6 @@
 /**
- * Work experience, as on syedali.app: the Basenine internship word for word from the live site, and the Decathlon India
- * freelance work (KIPRUN, Anime Sports League) from their repositories and case studies here.
+ * Work experience: the Basenine internship, and the Decathlon India freelance work (KIPRUN, Anime Sports League) from their
+ * repositories and case studies here.
  * Periods are "MM.YYYY"; a role with no `end` is ongoing.
  */
 export type Role = {
@@ -32,12 +32,12 @@ export const experience: Employer[] = [
           { slug: "uniqkey", title: "Uniqkey" },
         ],
         points: [
-          "Designed and developed end-to-end web experiences for client products including Kodex and Uniqkey.",
-          "Translated high-fidelity Figma designs into pixel-perfect, responsive interfaces using React, Next.js, TypeScript, and Tailwind CSS.",
-          "Built reusable UI components and contributed to scalable design systems for faster product development.",
-          "Implemented smooth interactions, micro-animations, and polished user experiences using GSAP and modern CSS.",
-          "Collaborated with founders, product managers, designers, and engineers to take products from concept to production.",
-          "Worked on internal tools and workflow improvements to streamline design-to-development handoff and increase team efficiency.",
+          "Designed and built websites for Basenine's clients, including Kodex and Uniqkey, from the first wireframe to production.",
+          "Turned detailed Figma designs into responsive interfaces in React, Next.js, TypeScript and Tailwind CSS, matched closely to the design.",
+          "Built reusable components and contributed to design systems, so new pages took less time.",
+          "Built the interactions and micro-animations with GSAP and modern CSS.",
+          "Worked with founders, product managers, designers and engineers to take products from concept to production.",
+          "Worked on internal tools that made the handoff from design to development easier for the team.",
         ],
         skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Figma", "GSAP", "Framer Motion"],
       },
@@ -59,7 +59,7 @@ export const experience: Employer[] = [
           "Designed and built the campaign page for KIPRUN, Decathlon's running brand, live on decathlon.in four days after the first commit.",
           "Served under Decathlon's own address through its proxy, with every price, weight and rating read from decathlon.in.",
           "A range where each colour shows its shoe and opens its own product, with the women's fits added a month after launch.",
-          "Loaded about 970,000 times in its last month, by Vercel's CDN logs.",
+          "Loaded about 970,000 times in its last month, according to Vercel's CDN logs.",
         ],
         skills: ["HTML", "CSS", "JavaScript", "Vercel", "Figma"],
       },
@@ -72,7 +72,7 @@ export const experience: Employer[] = [
         stones: [{ slug: "anime-sports-league", title: "Anime Sports League" }],
         points: [
           "Designed and built the campaign site for Decathlon India's Anime Sports League, around Jolly Yun Shann's illustrations.",
-          "Cut the traced poster (1,732 paths) into 15 layers that part as you scroll, and an episode deck that deals itself.",
+          "Cut the traced poster (1,732 paths) into 15 layers that part as you scroll, and built an episode deck that deals itself.",
           "Brought the card art from 3 MB to 310 kB, and tagged every product link with the campaign's UTM parameters.",
         ],
         skills: ["React", "Vite", "GSAP", "Lenis", "SVG"],

@@ -7,13 +7,13 @@ const dir = "/case-studies/kodex";
 export const kodex: CaseStudy = {
   slug: "kodex",
   title: "Kodex",
-  tagline: "A compliance site that feels as ==trustworthy== as the product.",
+  tagline: "The product was ready for enterprise. ==The website wasn't==.",
   theme: { deep: "#3550c8", mid: "#87abff", light: "#bcd38a", highlight: "#d3e6a2" },
   hero: { frame: "screen", picture: { src: `${dir}/kodex-screenshot.png`, alt: "The redesigned Kodex website" } },
   kind: "Web",
   year: "2026",
   summary:
-    "Redesigned Kodex's marketing site so a mature B2B compliance platform finally feels as trustworthy and easy to evaluate as the product actually is.",
+    "Kodex is a B2B compliance platform that helps organisations build regulatory workflows into the systems they already use. At Basenine, I redesigned its marketing site so it feels as trustworthy and as easy to evaluate as the product actually is.",
   meta: [
     { label: "Role", value: "Web Design" },
     { label: "Studio", value: "Basenine, 2026" },
@@ -27,9 +27,9 @@ export const kodex: CaseStudy = {
     problem:
       "A mature B2B compliance platform had a website that buried its value in technical text and an unstructured menu.",
     approach:
-      "A redesign around clarity: a hero that says what Kodex does, navigation by intent, product pages in modules, and proof placed before the call to action.",
+      "I redesigned it around one buyer's path: a hero that says what Kodex does, a menu built around what people came for, product pages in modules, and proof before the call to action.",
     result:
-      "One navigation path instead of three, and a site that reads as enterprise-ready.",
+      "One way into the products instead of three, and a site that finally looks as ready as the product.",
   },
   status: {
     title: "Kodex at Basenine",
@@ -48,57 +48,66 @@ export const kodex: CaseStudy = {
     links: [],
   },
   cover: { src: `${dir}/kodex-screenshot.png`, alt: "The redesigned Kodex website" },
+  closing: [
+    "Phew... that was a lot of compliance.",
+    "Thanks for sticking around. Let's move on to something a little less regulated.",
+  ],
   blocks: [
     {
       type: "section",
       id: "challenge",
       entry: "rise",
       eyebrow: "The problem",
-      title: "What got in the way",
+      title: "Where the old site ==lost people==",
       body: [
-        "Reviewing the old site page by page, I found five places where visitors lost the thread. Each one became a goal for the redesign.",
+        "Kodex was a mature product with a site that didn't show it. Technical information was hard to digest, the navigation had no structure, and nothing on the page reflected how far the platform had come.",
+        "I went through the old site page by page, reading it the way a buyer would, and marked every place the thread broke. There were five, and each one became a goal for the redesign.",
       ],
     },
     {
       type: "cards",
       quick: true,
       items: [
-        { title: "The message wasn't clear", text: "Goal: help visitors understand what Kodex does within the first few seconds." },
-        { title: "Content had no hierarchy", text: "Goal: make the important information the easiest to see." },
-        { title: "Navigation was hard to explore", text: "Goal: reduce friction so finding products, industries and integrations feels obvious." },
-        { title: "Trust didn't come through", text: "Goal: a premium, consistent visual language that reflects the platform's maturity." },
-        { title: "The next step was unclear", text: "Goal: journeys that end on booking a demo or the documentation." },
+        { title: "The message wasn't clear", text: "Goal: a visitor should understand what Kodex does within the first few seconds." },
+        { title: "Content had no hierarchy", text: "Goal: the most important information should be the easiest to see." },
+        { title: "The navigation was hard to explore", text: "Goal: finding products, industries and integrations should feel obvious." },
+        { title: "Trust didn't come through", text: "Goal: one consistent visual language that reflects the platform's maturity." },
+        { title: "The next step was unclear", text: "Goal: every path should end on booking a demo or reading the documentation." },
       ],
     },
     {
       type: "illustration",
       src: "/illustrations/cabinet.html",
       title: "Records, kept in order",
-      note: "Run the pointer down the cabinet: the drawer at its height slides out and the ones beside it follow less far, the way the redesign opens one topic at a time.",
+      note: "Run the pointer down the cabinet. The drawer at your height slides out and its neighbours follow a little, the way the redesign opens one topic at a time.",
     },
     {
       type: "section",
       id: "business",
       title: "What Kodex ==needed from it==",
-      body: [],
+      body: [
+        "A redesign is easy to judge on taste alone. I wanted every change tied to something the business needed, and to a signal Kodex could watch after launch.",
+      ],
     },
     {
       type: "alignment",
       items: [
         { goal: "Win enterprise buyers evaluating vendors", design: "A hero that says what Kodex does within seconds, with clear primary actions.", signal: "Fewer visitors leaving from the first screen." },
-        { goal: "More demo bookings", design: "Every journey ends on booking a demo, after the proof.", signal: "Demo requests from the site." },
-        { goal: "Look as mature as the product", design: "One visual language, customer logos and compliance badges on every page.", signal: "Demo requests from product pages, not just the home page." },
+        { goal: "More demo bookings", design: "Every path ends on booking a demo, placed after the proof.", signal: "Demo requests from the site." },
+        { goal: "Look as mature as the product", design: "One visual language, with customer logos and compliance badges on every page.", signal: "Demo requests from product pages as well as the home page." },
       ],
     },
     {
       type: "statement",
-      text: "Kodex was ready for enterprise buyers. Its site had to ==look it==.",
+      text: "Nobody books a compliance demo from ==a site they can't follow==.",
     },
     {
       type: "section",
       id: "constraints",
-      title: "What I had to ==work within==",
-      body: [],
+      title: "Two limits on ==the redesign==",
+      body: [
+        "I could only touch the marketing site, and it had to satisfy two very different readers.",
+      ],
     },
     {
       type: "tradeoffs",
@@ -112,7 +121,7 @@ export const kodex: CaseStudy = {
         {
           kind: "Audience",
           constraint: "Two readers at once: the enterprise buyer and the technical evaluator.",
-          chose: "Two ends to every journey: a demo for the buyer, the documentation for the evaluator.",
+          chose: "Two ends to every path: a demo for the buyer, and the documentation for the evaluator.",
           cost: "Every page carries two next steps instead of one.",
         },
       ],
@@ -123,7 +132,9 @@ export const kodex: CaseStudy = {
       entry: "draw",
       eyebrow: "Design process",
       title: "From five frictions to ==one path==",
-      body: [],
+      body: [
+        "The order mattered here. I audited before I drew anything, and every design decision had to answer to one of the five goals.",
+      ],
     },
     {
       type: "process",
@@ -146,14 +157,14 @@ export const kodex: CaseStudy = {
           phase: "Wireframe",
           kind: "screen",
           title: "Map one buyer's path",
-          text: "One page per question a buyer asks, in the order they ask it.",
+          text: "One page for each question a buyer asks, in the order they ask it.",
           made: "four wireframes",
         },
         {
           phase: "Design",
           kind: "box",
           title: "Redesign in that order, and review it",
-          text: "Hero, navigation, product modules, then trust cues, weighed against stakeholder feedback and what could be built.",
+          text: "Hero, navigation, product modules, then trust cues, weighed against stakeholder feedback and what could actually be built.",
           made: "the redesigned site",
         },
       ],
@@ -163,7 +174,7 @@ export const kodex: CaseStudy = {
       id: "wireframes",
       title: "Four pages, one buyer's path",
       body: [
-        "Four pages carry the redesign. Each starts with the one thing an enterprise buyer needs at that point: what it is, where to go, how it works, and why to trust it.",
+        "Four pages carry the redesign. Each one opens with the single thing an enterprise buyer needs at that point: what it is, where to go, how it works and why to trust it.",
       ],
     },
     { type: "wireframes", screens: kodexWires, over: { src: `${dir}/kodex-screenshot.png`, alt: "The redesigned Kodex site" } },
@@ -174,16 +185,16 @@ export const kodex: CaseStudy = {
       eyebrow: "The redesign",
       title: "A hero that explains the platform",
       body: [
-        "Sharper messaging, supporting visuals and clear primary actions: what Kodex does within seconds, and where to go next.",
+        "The old hero never said what Kodex does. I rewrote the message, added supporting visuals and gave it clear primary actions, so a visitor knows what this is and where to go next within seconds.",
       ],
     },
     { type: "media", picture: { src: `${dir}/kx-hero-image.png`, alt: "Kodex hero redesign" } },
     {
       type: "section",
       id: "navigation",
-      title: "Navigation built around intent",
+      title: "A menu built around ==why people came==",
       body: [
-        "One menu, organised by what a visitor came to do: products, industries, integrations. Visitors arrive with a question, not a sitemap.",
+        "Products, industries and integrations sat in an unstructured menu, so exploring the platform felt like work. I reorganised them into one menu built around what a visitor came to do. People arrive with a question, and they shouldn't need a sitemap to answer it.",
       ],
     },
     {
@@ -199,14 +210,14 @@ export const kodex: CaseStudy = {
       type: "illustration",
       src: "/illustrations/signpost.html",
       title: "Three ways, one post",
-      note: "Point at an arm: it turns to point where you are. The menus were rebuilt the same way, around products, industries and integrations.",
+      note: "Point at an arm and it turns to show the way. The menus were rebuilt the same way, around products, industries and integrations.",
     },
     {
       type: "section",
       id: "storytelling",
-      title: "Product pages in modules",
+      title: "Long workflows, ==one piece at a time==",
       body: [
-        "Product pages built from modules with a clear hierarchy, so a long compliance workflow reads one piece at a time.",
+        "Compliance workflows are complicated, and long text-heavy sections made them harder to follow. I rebuilt the product pages as modules with a clear hierarchy, so a long workflow can be read one piece at a time.",
       ],
     },
     {
@@ -222,19 +233,19 @@ export const kodex: CaseStudy = {
       type: "illustration",
       src: "/illustrations/modules.html",
       title: "A page, rebuilt in modules",
-      note: "Point at the plate: the modules near the pointer rise towards it, the one under it most, so one piece can be read at a time.",
+      note: "Point at the plate and the modules near the pointer rise towards it, so one piece can be read at a time.",
     },
     {
       type: "section",
       id: "trust",
-      title: "Enterprise ==trust==",
+      title: "Proof before ==the ask==",
       body: [
-        "Customer logos, compliance badges, stronger type and steady spacing on every page, before the call to action. A buyer decides to trust a vendor before deciding to talk to it.",
+        "A buyer decides to trust a vendor before deciding to talk to it. So customer logos and compliance badges, along with stronger type and steady spacing, appear on every page before the call to action.",
       ],
     },
     {
       type: "gallery",
-      fit: "contain",
+      fit: "row",
       pictures: [
         { src: `${dir}/kx-trust-chart.png`, alt: "A compliance chart" },
         { src: `${dir}/kx-trust-frame1.png`, alt: "A trust badge row" },
@@ -268,9 +279,9 @@ export const kodex: CaseStudy = {
           { text: "One navigation, organised by what a visitor came to do", time: "1 path" },
           { text: "Product pages in modules, read one piece at a time" },
           { text: "Customer logos and one visual language on every page" },
-          { text: "Every journey ends on a demo or the documentation" },
+          { text: "Every path ends on a demo or the documentation" },
         ],
-        total: "Reads as enterprise-ready",
+        total: "A site that matches the product",
       },
     },
     {
@@ -284,7 +295,7 @@ export const kodex: CaseStudy = {
     {
       type: "system",
       title: "How the redesigned site fits together",
-      note: "Point at a part, or tab to it: what a change to it reaches lights up.",
+      note: "Point at a part, or tab to it, and what a change to it reaches lights up.",
       parts: [
         { id: "type", label: "Type and spacing", note: "One scale and one spacing system on every page.", moves: ["hero", "modules", "trust"] },
         { id: "nav", label: "Navigation", note: "Grouped by what a visitor came to do.", moves: ["products", "industries", "integrations"] },
@@ -295,7 +306,7 @@ export const kodex: CaseStudy = {
         { id: "modules", label: "Modules", note: "Product content in blocks that can be read one at a time.", moves: ["demo", "docs"] },
         { id: "trust", label: "Trust cues", note: "Customer logos, compliance badges and enterprise layouts.", moves: ["demo"] },
         { id: "docs", label: "Documentation", note: "Where the technical evaluator goes next." },
-        { id: "demo", label: "Book a demo", note: "Where every buyer's journey ends." },
+        { id: "demo", label: "Book a demo", note: "Where every buyer's path ends." },
       ],
     },
     {
@@ -309,11 +320,21 @@ export const kodex: CaseStudy = {
     {
       type: "stats",
       quick: true,
+      note: "These numbers describe the redesign itself, not live traffic.",
       items: [
         { label: "Ways into the products", value: "3 → 1", note: "Products, industries and integrations, from one navigation." },
         { label: "Frictions, each made a goal", value: "5", note: "Found by reviewing the old site page by page." },
         { label: "Pages in the buyer's path", value: "4", note: "What it is, where to go, how it works, why to trust it." },
-        { label: "Where every journey ends", value: "2", note: "Booking a demo, or the documentation." },
+        { label: "Where every path ends", value: "2", note: "Booking a demo, or the documentation." },
+      ],
+    },
+    {
+      type: "section",
+      id: "learned",
+      title: "What I learned",
+      body: [
+        "Working on Kodex taught me that designing for B2B goes beyond clean interfaces. The real work is simplifying complex ideas and saying them clearly.",
+        "I also learned how to balance stakeholder feedback, business goals and technical constraints, and still end up with something that feels simple to use.",
       ],
     },
   ],

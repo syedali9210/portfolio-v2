@@ -16,21 +16,21 @@ export function Tabs({ labels, children, contain }: { labels: string[]; children
     list.current?.querySelectorAll<HTMLButtonElement>("[role=tab]")[k]?.focus();
   };
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex flex-col items-center gap-text">
       <div className="plate relative aspect-[16/10] w-full overflow-hidden">
         {children.map((child, n) => (
           <div
             key={n}
             role="tabpanel"
             aria-hidden={n !== on}
-            className={`tab-pane absolute inset-0 ${contain ? "flex items-center justify-center p-6 sm:p-10" : ""}`}
+            className={`tab-pane absolute inset-0 ${contain ? "flex items-center justify-center p-text sm:p-group" : ""}`}
             data-on={n === on || undefined}
           >
             {child}
           </div>
         ))}
       </div>
-      <div ref={list} role="tablist" aria-label="Pictures" className="flex max-w-full flex-wrap justify-center gap-1.5 rounded-full bg-surface p-1 shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_6px_16px_-10px_rgb(0_0_0/0.3)]">
+      <div ref={list} role="tablist" aria-label="Pictures" className="flex max-w-full flex-wrap justify-center gap-label rounded-full bg-surface p-label shadow-[0_0_0_1px_rgb(0_0_0/0.06),0_6px_16px_-10px_rgb(0_0_0/0.3)]">
         {labels.map((label, n) => (
           <button
             key={label}

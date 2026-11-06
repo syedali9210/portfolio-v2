@@ -4,21 +4,24 @@ import { useEffect, useRef } from "react";
 import { clamp01, onScrollFrame, setImmersive, still } from "./scroll";
 
 /**
- * A film or picture that leaves the column: as the page scrolls it grows from the column's width to the whole screen,
- * holds there, then scrolls away at that size (it never shrinks back while pinned: Syed found the switch back weird;
- * the page returns to the column with the next section). Each frame only reads the page and writes one transform
- * (plus the radius while it moves); the stage's size is set on resize. On a portrait screen "full screen" is the full
- * width at the film's own shape, so a 16:9 film is never cropped to a strip. Under reduced motion it stays a card.
+ * A film or picture that leaves the column. On a landscape screen it grows from the column's width to the whole screen as the page
+ * scrolls, holds there, then scrolls away at that size (it never shrinks back while pinned: Syed found the switch back weird; the page
+ * returns to the column with the next section). Each frame only reads the page and writes one transform (plus the radius while it moves);
+ * the stage's size is set on resize.
+ *
+ * On a portrait screen a 16:9 film can't fill the screen, so pinning it only left it sliding down an empty stage against the finger. There
+ * it stays in the page's flow, edge to edge, and grows out to the edges as it comes up (.film-flow in globals.css): a scroll-driven
+ * animation, so it runs on the compositor and keeps up with the finger. Under reduced motion it stays a card.
  */
-export function Immersive({ children, caption, aspect }: { children: React.ReactNode; caption?: string; aspect: number }) {
+export function Immersive({ children, aspect }: { children: React.ReactNode; aspect: number }) {
   const runway = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const media = useRef<HTMLDivElement>(null);
-  const label = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     if (still()) return;
     const root = document.documentElement;
+    const wide = matchMedia("(orientation: landscape)");
     const me = {};
     let vw = 0, vh = 0, W = 0, H = 0, radius = -1, left = 0, width = 0, top = 0, bottom = 0, p = 0;
     let target = 0, cur = -1, raf = 0, then = 0;
@@ -34,7 +37,6 @@ export function Immersive({ children, caption, aspect }: { children: React.React
       media.current!.style.transform = `translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) scale(${s.toFixed(4)})`;
       const rad = Math.round(((16 * Math.min(1, (1 - e) * 2.5)) / s) * 2) / 2;
       if (rad !== radius) media.current!.style.borderRadius = `${(radius = rad)}px`;
-      if (label.current) label.current.style.opacity = String(clamp01((e - 0.6) / 0.4));
       setImmersive(me, top < vh * 0.5 && bottom > vh * 0.5 && e > 0.04);
     };
     // The scroll sets the target; the film follows it over time (1 − e^(−7·dt)), so it glides and settles softly.
@@ -46,13 +48,25 @@ export function Immersive({ children, caption, aspect }: { children: React.React
       paint();
       raf = cur === target ? 0 : requestAnimationFrame(glide);
     };
+    // Turned to portrait: nothing of the pinned film stays behind.
+    const letGo = () => {
+      cancelAnimationFrame(raf);
+      raf = vw = vh = 0;
+      cur = radius = -1;
+      setImmersive(me, false);
+      stage.current!.removeAttribute("style");
+      media.current!.style.cssText = `aspect-ratio: ${aspect}`;
+    };
 
     const off = onScrollFrame(() => {
+      if (!wide.matches) {
+        if (vw) letGo();
+        return;
+      }
       const r = runway.current!.getBoundingClientRect();
       if (root.clientWidth !== vw || innerHeight !== vh) {
         vw = root.clientWidth;
         vh = innerHeight;
-        // Landscape screens take the whole screen (a little crop is fine); portrait ones the full width at the film's shape.
         W = vw;
         H = vw / vh >= aspect * 0.75 ? vh : Math.round(vw / aspect);
         stage.current!.style.marginLeft = `${-r.left}px`;
@@ -80,20 +94,15 @@ export function Immersive({ children, caption, aspect }: { children: React.React
   }, [aspect]);
 
   return (
-    <div ref={runway} data-runway className="relative motion-safe:h-[190svh] motion-safe:portrait:h-[160svh]">
-      <div ref={stage} className="motion-safe:sticky motion-safe:top-0 motion-safe:flex motion-safe:h-svh motion-safe:items-center motion-safe:justify-center motion-safe:overflow-hidden">
+    <div ref={runway} data-runway className="film-flow relative motion-safe:landscape:h-[190svh]">
+      <div ref={stage} className="motion-safe:landscape:sticky motion-safe:landscape:top-0 motion-safe:landscape:flex motion-safe:landscape:h-svh motion-safe:landscape:items-center motion-safe:landscape:justify-center motion-safe:landscape:overflow-hidden">
         <div
           ref={media}
           style={{ aspectRatio: aspect }}
-          className="w-full shrink-0 overflow-hidden rounded-[var(--radius-sheet)] bg-black will-change-transform motion-safe:origin-center"
+          className="film-media w-full shrink-0 overflow-hidden bg-black motion-safe:landscape:origin-center motion-safe:landscape:rounded-[var(--radius-sheet)] motion-safe:landscape:will-change-transform"
         >
           {children}
         </div>
-        {caption && (
-          <p ref={label} className="mt-3 text-small text-label motion-safe:absolute motion-safe:bottom-6 motion-safe:left-1/2 motion-safe:mt-0 motion-safe:max-w-[calc(100%-32px)] motion-safe:-translate-x-1/2 motion-safe:rounded-full motion-safe:bg-black/55 motion-safe:px-3.5 motion-safe:py-1.5 motion-safe:text-center motion-safe:text-white motion-safe:opacity-0">
-            {caption}
-          </p>
-        )}
       </div>
     </div>
   );

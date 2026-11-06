@@ -17,10 +17,10 @@ export function Hero({ study }: { study: CaseStudy }) {
   const lead = plain(study.tagline);
   const lede = study.summary.startsWith(lead) ? study.summary.slice(lead.length).trim() : study.summary;
   const live = study.status.links[0];
-  const link = "out-link inline-flex h-9 items-center gap-1.5 text-copy text-ink underline-offset-4 hover:underline";
+  const link = "out-link inline-flex h-9 items-center gap-note text-copy text-ink underline-offset-4 hover:underline";
 
   return (
-    <header id="overview" data-quick className="hero part pt-[clamp(72px,8vw,112px)] max-lg:pt-3">
+    <header id="overview" data-quick className="hero part pt-[var(--page-top)]">
       <div className="col mx-auto w-full max-w-[calc(var(--wide)+2*var(--gutter))] px-[var(--gutter)]">
         <div className="sky relative aspect-[4/3] overflow-hidden sm:aspect-[16/9]">
           <div className="sky-glow" aria-hidden="true" />
@@ -40,22 +40,22 @@ export function Hero({ study }: { study: CaseStudy }) {
         </div>
       </div>
 
-      <div className="col mx-auto mt-[clamp(40px,5vw,64px)] w-full max-w-[calc(var(--measure)+2*var(--gutter))] px-[var(--gutter)]">
+      <div className="col mx-auto mt-block w-full max-w-[calc(var(--measure)+2*var(--gutter))] px-[var(--gutter)]">
         {/* eslint-disable-next-line @next/next/no-img-element -- the project's rock from the first screen, already loaded */}
         <img className="case-mark" data-land="stone" src={`/stamps/${study.slug}-sm.webp`} alt="" width={512} height={641} decoding="async" draggable={false} />
         <h1 className="font-serif text-display text-ink">
           <Rich text={study.tagline} />
         </h1>
-        <p className="mt-5 text-lead text-body">{lede}</p>
-        <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-3">
+        <p className="mt-text text-lead text-body">{lede}</p>
+        <dl className="mt-group grid grid-cols-2 gap-lead sm:grid-cols-3">
           {study.meta.map((m) => (
             <div key={m.label}>
               <dt className="text-copy text-label">{m.label}</dt>
-              <dd className="mt-1 text-copy text-ink">{m.value}</dd>
+              <dd className="mt-label text-copy text-ink">{m.value}</dd>
             </div>
           ))}
         </dl>
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-1">
+        <div className="mt-lead flex flex-wrap items-center gap-x-lead gap-y-label">
           {live && (
             <a href={live.href} target="_blank" rel="noopener" className={link}>
               {live.label}
@@ -64,10 +64,12 @@ export function Hero({ study }: { study: CaseStudy }) {
             </a>
           )}
           <ModeButton className={`${link} cursor-pointer`}>
-            Quick overview <Icon name="arrow-right" size={14} className="text-label" />
+            <span className="when-full">Quick overview</span>
+            <span className="when-quick">Full story</span>
+            <Icon name="arrow-right" size={14} className="text-label" />
           </ModeButton>
         </div>
-        <hr className="mt-12 border-line" />
+        <hr className="mt-group border-line" />
       </div>
     </header>
   );

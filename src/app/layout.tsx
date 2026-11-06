@@ -12,7 +12,7 @@ const serif = Libre_Baskerville({ variable: "--font-baskerville", subsets: ["lat
 
 export const metadata: Metadata = {
   title: { default: "Syed Ali · Design engineer", template: "%s · Syed Ali" },
-  description: "Trace, Animation Engine, KIPRUN, Kodex, Uniqkey and Anime Sports League, written up.",
+  description: "Case studies by Syed Ali, a product designer and design engineer in Bengaluru: Trace, Animation Engine, KIPRUN, Kodex, Uniqkey and Anime Sports League.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

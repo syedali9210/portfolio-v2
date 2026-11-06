@@ -375,7 +375,7 @@ export function Archive({ items, kinds }: { items: Node[]; kinds: { kind: Archiv
               </div>
             </div>
             <h1 className="ar-title font-serif">Archive</h1>
-            <p className="ar-desc">{items.length} pieces, figures, films, sites and products, each cut in its own stone. Press one to break it open.</p>
+            <p className="ar-desc">{items.length} pieces: figures, films, sites and products, each cut in its own stone. Press one to break it open.</p>
           </aside>
           <main className="ar-main">
             <ul ref={grid} className="cards">
