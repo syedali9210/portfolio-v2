@@ -26,6 +26,7 @@ export function warmEffects() {
     requestAnimationFrame(tick);
   };
   const idle = () => ("requestIdleCallback" in window ? requestIdleCallback(go, { timeout: 2000 }) : setTimeout(go, 800));
-  if (document.documentElement.classList.contains("boot")) addEventListener("boot:done", idle, { once: true });
+  // The stones' fan is still opening as the first screen finishes arriving (FAN_WAIT and FAN_TIME in Stamps.tsx), and this mustn't stall it.
+  if (document.documentElement.classList.contains("boot")) addEventListener("boot:done", () => setTimeout(idle, 700), { once: true });
   else idle();
 }

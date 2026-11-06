@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
 import { flushSync, createPortal } from "react-dom";
 import type { ArchiveItem, ArchiveKind } from "@/content/archive";
 import { Cursor } from "./Cursor";
-import { PageLink } from "./PageLink";
+import { landed, PageLink } from "./PageLink";
 import { Paper } from "./Paper";
 import { sift } from "./sift";
 import { SoundToggle, sound } from "./Sound";
@@ -246,8 +245,8 @@ function Stage({ open, onClosed }: { open: Open; onClosed: () => void }) {
   return createPortal(
     <div ref={root} role="dialog" aria-modal="true" aria-label={item.title} className={`stage stage-${phase}`} onClick={close}>
       <canvas ref={canvas} className="stage-dust" aria-hidden="true" />
-      <div className="stage-body" onClick={(e) => e.stopPropagation()} style={{ "--ar": item.figure ? 1.25 : item.w / item.h } as CSSProperties}>
-        <div ref={media} className="stage-media">
+      <div className="stage-body" data-fly-scope onClick={(e) => e.stopPropagation()} style={{ "--ar": item.figure ? 1.25 : item.w / item.h } as CSSProperties}>
+        <div ref={media} className="stage-media" data-fly="screen">
           {item.video ? (
             <video ref={film} src={item.video} poster={item.picture.src} preload="none" muted loop playsInline controls className="size-full object-cover" />
           ) : item.figure ? (
@@ -263,9 +262,9 @@ function Stage({ open, onClosed }: { open: Open; onClosed: () => void }) {
           <p className="mt-1 font-serif text-[clamp(22px,1.2vw+14px,30px)] leading-tight text-ink">{item.title}</p>
           <p className="mt-1 text-small text-body">{item.note}</p>
           {item.href && (
-            <Link href={item.href} className="mt-3 inline-flex font-mono text-[11px] tracking-[0.08em] text-fg uppercase underline-offset-4 hover:underline">
+            <PageLink href={item.href} className="mt-3 inline-flex font-mono text-[11px] tracking-[0.08em] text-fg uppercase underline-offset-4 hover:underline">
               Open the case study →
-            </Link>
+            </PageLink>
           )}
         </div>
         <button ref={closeBtn} type="button" onClick={close} className="stage-close" aria-label="Close" data-sound="none">
@@ -303,16 +302,24 @@ export function Archive({ items, kinds }: { items: Node[]; kinds: { kind: Archiv
 
   useEffect(() => {
     const idle = (fn: () => void, wait: number) => ("requestIdleCallback" in window ? requestIdleCallback(fn, { timeout: wait }) : setTimeout(fn, wait));
-    // The dust's worker and its GL, made while nothing's happening, so the first opening has nothing left to build. And each piece's
-    // picture, small, which the dust takes its colours from.
-    idle(warmDust, 4000);
-    idle(() => {
-      for (const it of items) {
-        const im = document.createElement("img");
-        im.src = `/_next/image?url=${encodeURIComponent(it.picture.src)}&w=640&q=90`;
-        pictures.current.set(it.id, im);
-      }
-    }, 3000);
+    // The dust's worker and its GL, made while nothing's happening, so the first opening has nothing left to build.
+    landed().then(() => idle(warmDust, 4000));
+    // Each piece's picture, small, which the dust takes its colours from, as its card comes near the screen.
+    const cards = [...grid.current!.children];
+    const near = new IntersectionObserver(
+      (seen) => {
+        for (const { isIntersecting, target } of seen) {
+          if (!isIntersecting) continue;
+          near.unobserve(target);
+          const it = items[cards.indexOf(target)], im = document.createElement("img");
+          im.src = `/_next/image?url=${encodeURIComponent(it.picture.src)}&w=640&q=90`;
+          pictures.current.set(it.id, im);
+        }
+      },
+      { rootMargin: "600px 0px" },
+    );
+    cards.forEach((c) => near.observe(c));
+    return () => near.disconnect();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the list is fixed for the page
   }, []);
 
@@ -362,7 +369,7 @@ export function Archive({ items, kinds }: { items: Node[]; kinds: { kind: Archiv
         </nav>
         <div className="ar-layout">
           <aside className="ar-side">
-            <PageLink href="/" className="ar-back">
+            <PageLink href="/" className="ar-back" data-stone="piece-back">
               <span aria-hidden="true">←</span> Back
             </PageLink>
             <div className="ar-mark" aria-hidden="true">
@@ -380,7 +387,7 @@ export function Archive({ items, kinds }: { items: Node[]; kinds: { kind: Archiv
           <main className="ar-main">
             <ul ref={grid} className="cards">
               {items.map((it, n) => (
-                <li key={it.id} className="card" data-kind={it.kind} hidden={kind !== "all" && it.kind !== kind} style={{ "--i": n } as CSSProperties} data-cursor="Open" data-sound="bronze" onClick={(e) => press(it, e)}>
+                <li key={it.id} className="card" data-kind={it.kind} hidden={kind !== "all" && it.kind !== kind} style={{ "--i": n } as CSSProperties} data-cursor="Open" data-stone={`piece-${it.id}`} onClick={(e) => press(it, e)}>
                   <p className="card-top">
                     <span>{it.year}</span>
                     <b>{String(n + 1).padStart(4, "0")}</b>
@@ -391,7 +398,7 @@ export function Archive({ items, kinds }: { items: Node[]; kinds: { kind: Archiv
                         {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, 512 px */}
                         <img src={`/stamps/piece-${it.id}-sm.webp`} alt="" width={512} height={641} loading={n < 6 ? "eager" : "lazy"} decoding="async" draggable={false} />
                       </span>
-                      <button type="button" className="stamp-link" data-sound="bronze" aria-label={`Open ${it.title}, ${it.kind} ${it.year}`} />
+                      <button type="button" className="stamp-link" aria-label={`Open ${it.title}, ${it.kind} ${it.year}`} />
                     </div>
                   </div>
                   <h2 className="card-title font-serif">{it.title}</h2>

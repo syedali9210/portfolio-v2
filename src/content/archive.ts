@@ -1,5 +1,7 @@
 import { caseStudies } from ".";
+import { PLACES } from "./places";
 import type { Picture } from "./types";
+import { VOICES } from "./voices";
 
 export type ArchiveKind = "animation" | "motion" | "web" | "product" | "photos";
 
@@ -53,3 +55,10 @@ export const archive: ArchiveItem[] = [
     href: `/work/${c.slug}`,
   })),
 ];
+
+// Runs on every build: a stone with no voice, or two stones playing one tune, stops it.
+for (const stone of [...caseStudies.map((c) => c.slug), ...archive.map((a) => `piece-${a.id}`), ...PLACES.map((p) => p.stone), "piece-menu", "piece-back"])
+  if (!VOICES[stone]) throw new Error(`${stone} has no voice: add one to content/voices.ts`);
+const tunes = Object.entries(VOICES).map(([stone, v]) => [stone, v.tune.join(" ")]);
+for (const [stone, tune] of tunes)
+  if (tunes.some(([other, t]) => other !== stone && t === tune)) throw new Error(`${stone} shares its tune, ${tune}, with another stone`);

@@ -80,7 +80,7 @@ function Work({ slug, side, win }: (typeof ROWS)[number]) {
           Read the case study <span aria-hidden="true">→</span>
         </p>
       </div>
-      <PageLink href={`/work/${slug}`} className="wk-link" aria-label={`${study.title}: read the case study`} data-cursor="View project" />
+      <PageLink href={`/work/${slug}`} className="wk-link" aria-label={`${study.title}: read the case study`} data-cursor="View project" data-stone={slug} />
     </li>
   );
 }
@@ -95,7 +95,7 @@ function Menu() {
         <InkWord text="Work" />
       </a>
       {PLACES.map((p) => (
-        <PageLink key={p.href} href={p.href} className={MENU} preload={`/stamps/${p.stone}.webp`}>
+        <PageLink key={p.href} href={p.href} className={MENU} preload={`/stamps/${p.stone}.webp`} data-stone={p.stone} data-stone-hover="">
           <InkWord text={p.word} />
           {/* eslint-disable-next-line @next/next/no-img-element -- a small stone, shown as the word is pointed at; pressed, it flies to its page */}
           <img className="menu-stone" data-fly="stone" data-land-from={p.href} src={`/stamps/${p.stone}-icon.webp`} alt="" width={216} height={271} loading="lazy" decoding="async" draggable={false} />
@@ -109,7 +109,7 @@ function Menu() {
 function Chip({ slug, children }: { slug: string; children: ReactNode }) {
   const c = caseStudies.find((s) => s.slug === slug)!;
   return (
-    <PageLink href={`/work/${slug}`} data-peek={c.cover.src} className="chip" style={{ "--c": c.theme.mid } as CSSProperties}>
+    <PageLink href={`/work/${slug}`} data-peek={c.cover.src} data-stone={slug} className="chip" style={{ "--c": c.theme.mid } as CSSProperties}>
       {children}
     </PageLink>
   );
@@ -242,7 +242,7 @@ export function Home() {
         <p className={`${label} text-label`}>© 2026 Syed Ali</p>
         <nav aria-label="Pages" className="flex gap-lead max-lg:hidden">
           {PLACES.map((p) => (
-            <PageLink key={p.href} href={p.href} className={`${label} text-label transition-colors hover:text-ink`} preload={`/stamps/${p.stone}.webp`}>
+            <PageLink key={p.href} href={p.href} className={`${label} text-label transition-colors hover:text-ink`} preload={`/stamps/${p.stone}.webp`} data-stone={p.stone}>
               {p.word}
             </PageLink>
           ))}

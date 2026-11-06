@@ -4,12 +4,16 @@ import { type CSSProperties, useEffect, useState } from "react";
 
 type Box = { x: number; y: number; w: number; h: number };
 
+/** How long the scaffold waits for the fonts: it's measured where the words land, but a slow font doesn't hold the page up. */
+const FONTS = 600;
+
 /**
  * The preloader, after Shahriyar M's: before anything shows, the first screen is drawn as its own scaffold. Dashed
  * hairlines run the full width at the top and foot of every block and the full height at their edges, and each block
- * is outlined; then the content comes into focus out of a blur, top to bottom, and the scaffold fades away. About two
- * and a half seconds. layout.tsx sets html.boot before the first paint on every full load of the home page (never
- * under reduced motion); the blocks are the [data-boot] elements on the first screen.
+ * is outlined; then the content comes into focus out of a blur, top to bottom, and the scaffold fades away. Under
+ * two seconds, the content starting to show by half a second. layout.tsx sets html.boot before the first paint on the first
+ * full load of the home page in a visit (never under reduced motion); after that the page is simply there. The blocks are the
+ * [data-boot] elements on the first screen.
  */
 export function Preloader() {
   const [boxes, setBoxes] = useState<Box[] | null>(null);
@@ -27,7 +31,7 @@ export function Preloader() {
     };
     let live = true;
     // Measured once the fonts are in, so the scaffold is drawn where the words will land.
-    document.fonts.ready.then(() => {
+    Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, FONTS))]).then(() => {
       if (!live) return;
       const found: Box[] = [];
       for (const el of document.querySelectorAll<HTMLElement>("[data-boot]")) {
@@ -39,9 +43,9 @@ export function Preloader() {
         setPhase("focus");
         html.classList.add("boot-in");
         dispatchEvent(new Event("boot:in"));
-      }, 850);
-      later(() => setPhase("out"), 2000);
-      later(done, 2700);
+      }, 480);
+      later(() => setPhase("out"), 1200);
+      later(done, 1700);
     });
     return () => {
       live = false;

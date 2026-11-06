@@ -60,7 +60,7 @@ export function CaseStudyView({ study }: { study: CaseStudy }) {
       <Paper />
       <RevealObserver />
       <SmoothScroll />
-      <Panels study={study} />
+      <Panels status={study.status} />
 
       {/* A constant soft blur along the bottom edge: the page dissolves into it as it scrolls. */}
       <div className="bottom-blur pointer-events-none fixed inset-x-0 bottom-0 z-20" aria-hidden="true">
@@ -141,7 +141,7 @@ export function CaseStudyView({ study }: { study: CaseStudy }) {
               Up next
               <span className="eyebrow-rule" aria-hidden="true" />
             </p>
-            <PageLink href={`/work/${next.slug}`} data-cursor="View project" className="group mx-auto block max-w-[460px]">
+            <PageLink href={`/work/${next.slug}`} data-cursor="View project" data-stone={next.slug} className="group mx-auto block max-w-[460px]">
               <span className="work-media block aspect-[16/10]" data-fly="screen" style={{ "--tint": next.theme.mid } as CSSProperties}>
                 <Image quality={90} src={next.cover.src} alt="" {...sizeOf(next.cover)} sizes="460px" className="work-shot" />
               </span>

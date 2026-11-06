@@ -22,7 +22,7 @@ export function Rock({ slug, title, rot }: { slug: string; title: string; rot: n
         {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, 512 px */}
         <img src={`/stamps/${slug}-sm.webp`} alt="" width={512} height={641} decoding="async" draggable={false} />
       </span>
-      <PageLink href={`/work/${slug}`} className="stamp-link" aria-label={`${title}: read the case study`} data-sound="bronze" data-cursor="View project" draggable={false} />
+      <PageLink href={`/work/${slug}`} className="stamp-link" aria-label={`${title}: read the case study`} data-cursor="View project" draggable={false} />
     </div>
   );
 }
@@ -45,14 +45,14 @@ export function SidePage({ page, title, desc, children }: { page: string; title:
         </div>
         <nav className="ar-nav" aria-label="About Syed" style={{ "--a": PAGES.findIndex((p) => p.page === page) } as CSSProperties}>
           {PAGES.map((p) => (
-            <PageLink key={p.page} href={`/${p.page}`} aria-current={p.page === page ? "page" : undefined} data-sound="switch" preload={`/stamps/piece-${p.page}.webp`}>
+            <PageLink key={p.page} href={`/${p.page}`} aria-current={p.page === page ? "page" : undefined} data-stone={`piece-${p.page}`} preload={`/stamps/piece-${p.page}.webp`}>
               {p.label}
             </PageLink>
           ))}
         </nav>
         <div className="ar-layout">
           <aside className="ar-side">
-            <PageLink href="/" className="ar-back">
+            <PageLink href="/" className="ar-back" data-stone="piece-back">
               <span aria-hidden="true">←</span> Back
             </PageLink>
             <div className="ar-mark" aria-hidden="true">

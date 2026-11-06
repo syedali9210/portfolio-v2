@@ -94,6 +94,23 @@ Pictures are square-cornered (`--radius-media`). Cards use 8 px, panels 4 px, an
 - A reveal's resting state must be plain: `[data-in]` clears every transform and filter. A start state that never clears shifts the layout for good.
 - Everything still works with reduced motion, and without JavaScript.
 
+## Sound
+
+Quiet, made on the spot with Web Audio (no files to load), and one switch turns all of it off.
+
+- **Every stone has its own voice** (`src/content/voices.ts`): a short tune, one note a blow of the hammer, and a press lands on its last note. It's the same stone wherever it appears, and a word or row that goes to a stone's page speaks with that stone's voice.
+- **One key, D major pentatonic**, so any order of stones still sounds played. Stones differ only slightly: another tune, on another kind of rock.
+- **The rock decides the body**, from how it's baked: strata are sandstone (short and dull), a rough dark stone is basalt (deep), a smooth veined one is marble (the longest ring).
+- **The register says what it is**: projects highest, an archive piece lower (a project's own piece plays its tune an octave down), a page's standing stone lowest.
+- No two stones share a tune, and every stone has one. The build checks both.
+
+## Speed
+
+- **Nothing heavy under a flight.** Work that can wait, such as starting a WebGL context, waits for `landed()` (`PageLink.tsx`), since a flight is the GPU's.
+- **Built once.** A stone's GL and the workers outlive the page. Build new ones one at a time, never in a burst.
+- **Ahead of the pointer, behind the page.** What's loaded in advance asks for low priority, and on a slow or metered connection a stone's maps wait until it's pointed at.
+- **A client component gets only what it needs.** Whatever it's given goes down the wire a second time.
+
 ## Components
 
 - **Plate** (`.plate`): a picture inset on a soft field of the project's colour.

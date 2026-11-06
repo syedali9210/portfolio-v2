@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Libre_Baskerville } from "next/font/google";
+import { BackFade } from "@/components/PageLink";
 import { Sound } from "@/components/Sound";
 import "./globals.css";
 
@@ -21,17 +22,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         {/* Before first paint: lets the scroll reveals hide their content only when JS is there to show it, puts back
             the theme the reader chose (light unless they picked dark), so the page never flashes the other one, and on
-            every full load of the home page holds its content back for the scaffold reveal (Preloader.tsx). */}
+            the first full load of the home page in a visit holds its content back for the scaffold reveal (Preloader.tsx). */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "var d=document.documentElement;d.classList.add('js');try{if(localStorage.getItem('theme')==='dark')d.dataset.theme='dark';if(location.pathname==='/'&&!matchMedia('(prefers-reduced-motion: reduce)').matches)d.classList.add('boot')}catch(e){}",
+              "var d=document.documentElement;d.classList.add('js');try{if(localStorage.getItem('theme')==='dark')d.dataset.theme='dark';if(location.pathname==='/'&&!sessionStorage.getItem('boot')&&!matchMedia('(prefers-reduced-motion: reduce)').matches){sessionStorage.setItem('boot','1');d.classList.add('boot')}}catch(e){}",
           }}
         />
       </head>
       <body className="min-h-svh overflow-x-clip">
         {children}
         <Sound />
+        <BackFade />
       </body>
     </html>
   );

@@ -9,7 +9,7 @@
  * it's held. The pointer is the lamp: the rock's body and its carving throw shadows that swing round as it moves. Let go, the
  * carving settles back to the depth it rests at; the rock itself never changes.
  */
-type Init = { type: "init"; id: number; canvas: OffscreenCanvas; slug: string; base: string; w: number; h: number; box: number; dpr: number; rot: number };
+type Init = { type: "init"; id: number; canvas: OffscreenCanvas; slug: string; base: string; w: number; h: number; box: number; dpr: number; rot: number; urgent: boolean };
 type Msg =
   | Init
   | { type: "set"; id: number; t: number; lift: number; tx: number; ty: number; lx: number; ly: number; entry: [number, number] }
@@ -18,6 +18,7 @@ type Msg =
   | { type: "over"; id: number; on: boolean; x: number; y: number; nx: number; ny: number; k?: number; straight?: number; stage?: boolean }
   | { type: "move"; id: number; x: number; y: number }
   | { type: "smash"; id: number; x: number; y: number }
+  | { type: "park"; id: number }
   | { type: "drop"; id: number };
 
 const REST = 0.55; // the carving's depth at rest, of its full depth: as baked (bake.py REST)
@@ -381,9 +382,9 @@ async function init(m: Init) {
     lift: spring(), tx: spring(), ty: spring(), lx: spring(LAMP_REST[0]), ly: spring(LAMP_REST[1]), sx: spring(), sy: spring(), px: 0, py: 0, nx: 0, ny: 0, fresh: false, sized: false, pending: 0,
   };
   stamps.set(m.id, s);
-  // The maps. Loaded here, so the page never decodes them.
+  // The maps. Loaded here, so the page never decodes them. Set up ahead of the pointer, they wait behind whatever the page itself is loading.
   const load = async (name: string, premultiply: boolean) => {
-    const blob = await (await fetch(`${m.base}${m.slug}${name}.webp`)).blob();
+    const blob = await (await fetch(`${m.base}${m.slug}${name}.webp`, { priority: m.urgent ? "auto" : "low" })).blob();
     return createImageBitmap(blob, { premultiplyAlpha: premultiply ? "premultiply" : "none", colorSpaceConversion: "none" });
   };
   const [art, alb, mapN, mapR, mapM] = await Promise.all([load("", true), load("-a", false), load("-n", false), load("-r", false), load("-m", false)]);
@@ -471,7 +472,7 @@ function mote(x: number, y: number, z: number, vx: number, vy: number, vz: numbe
 // A blow: the rock jolts, the carving starts to deepen behind its wave, and dust and chips burst off the face.
 function strike(s: Stamp, b: Blow, quiet = false) {
   b.done = true;
-  if (!quiet) postMessage({ type: "blow", id: s.id });
+  if (!quiet) postMessage({ type: "blow", id: s.id, n: s.blows.indexOf(b) });
   s.lift.v -= 2.4;
   s.tx.v += rand(-1.6, 1.6);
   s.ty.v += rand(-1.6, 1.6);
@@ -654,6 +655,19 @@ function frame(now: number) {
   });
   if (busy) raf = requestAnimationFrame(frame);
 }
+// At rest at once, with nothing left moving.
+function reset(s: Stamp) {
+  s.on = s.live = s.fresh = false;
+  s.pending = 0;
+  s.fade = 0;
+  s.settle = 1;
+  s.dust.length = 0;
+  s.blows = [];
+  for (const sp of [s.lift, s.tx, s.ty, s.sx, s.sy]) sp.x = sp.t = sp.v = 0;
+  s.lx.x = s.lx.t = LAMP_REST[0];
+  s.ly.x = s.ly.t = LAMP_REST[1];
+  s.lx.v = s.ly.v = 0;
+}
 function ask(s: Stamp) {
   if (!s.ready) return void (s.pending = 1);
   if (!s.live) {
@@ -680,16 +694,7 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
   else if (m.type === "over") {
     // Off a stage the page's picture takes over at once and flies home, so nothing here moves any more. The last frame stays up while the page fades the canvas out.
     if (!m.on && m.stage) {
-      s.on = s.live = s.fresh = false;
-      s.pending = 0;
-      s.fade = 0;
-      s.settle = 1;
-      s.dust.length = 0;
-      s.blows = [];
-      for (const sp of [s.lift, s.tx, s.ty, s.sx, s.sy]) sp.x = sp.t = sp.v = 0;
-      s.lx.x = s.lx.t = LAMP_REST[0];
-      s.ly.x = s.ly.t = LAMP_REST[1];
-      s.lx.v = s.ly.v = 0;
+      reset(s);
       return void postMessage({ type: "rest", id: s.id });
     }
     const was = s.on;
@@ -755,6 +760,12 @@ onmessage = ({ data: m }: MessageEvent<Msg>) => {
       draw(s);
       postMessage({ type: "drawn", id: s.id });
     }
+  } else if (m.type === "park") {
+    // Its page has gone, and a page with this stone may want it back: at rest, showing nothing, its drawing buffer given back. The maps stay.
+    reset(s);
+    s.gl.clear(s.gl.COLOR_BUFFER_BIT | s.gl.DEPTH_BUFFER_BIT);
+    s.canvas.width = s.canvas.height = 1;
+    s.sized = false;
   } else {
     s.gl.getExtension("WEBGL_lose_context")?.loseContext();
     stamps.delete(m.id);

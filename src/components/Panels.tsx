@@ -78,8 +78,8 @@ function ModeSwitch({ mode, setMode, className = "" }: { mode: Mode; setMode: (m
  * at its edge and a tick for each. Press a name, or swipe the bar on a phone, to go there. Press the one you're in for the whole list and the
  * switches, big words on the same soft blur as the home page's menu.
  */
-function CaseNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
-  const all = useMemo(() => [{ id: "overview", label: "Overview" }, ...study.status.sections.map((l) => ({ id: l.href.slice(1), label: l.label }))], [study]);
+function CaseNav({ status, mode }: { status: CaseStudy["status"]; mode: Mode }) {
+  const all = useMemo(() => [{ id: "overview", label: "Overview" }, ...status.sections.map((l) => ({ id: l.href.slice(1), label: l.label }))], [status]);
   const active = useActiveSection(all.map((s) => s.id));
   // Only the stops the page is showing: the quick overview leaves some out.
   const [left, setLeft] = useState<string[]>([]);
@@ -171,7 +171,7 @@ function CaseNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
         </nav>
         <ModeSwitch mode={mode} setMode={(m) => (setOpen(false), setMode(m))} className="pnav-mode" />
         <div className="pnav-foot">
-          {study.status.links.slice(0, 1).map((l) => (
+          {status.links.slice(0, 1).map((l) => (
             <a key={l.href} href={l.href} target="_blank" rel="noopener" className="smenu-out">
               {l.label} <Icon name="arrow-up-right" size={11} />
               <span className="sr-only"> (opens in a new tab)</span>
@@ -182,7 +182,7 @@ function CaseNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
         </div>
       </div>
       <div className="pnav-dock">
-        <PageLink href="/" className="pnav-back" aria-label="Back to the front page" data-sound="bronze">
+        <PageLink href="/" className="pnav-back" aria-label="Back to the front page" data-stone="piece-back">
           {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, shown small */}
           <img src="/stamps/piece-back.webp" alt="" width={216} height={271} decoding="async" draggable={false} />
         </PageLink>
@@ -218,7 +218,8 @@ function CaseNav({ study, mode }: { study: CaseStudy; mode: Mode }) {
   );
 }
 
-export function Panels({ study }: { study: CaseStudy }) {
+/** It only takes the nav's own part of the study: everything a client component is given goes down the wire a second time. */
+export function Panels({ status }: { status: CaseStudy["status"] }) {
   const [mode] = useMode();
   const nav = usePageNav();
 
@@ -242,5 +243,5 @@ export function Panels({ study }: { study: CaseStudy }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- nav reads what it needs when it's called
   }, []);
 
-  return <CaseNav study={study} mode={mode} />;
+  return <CaseNav status={status} mode={mode} />;
 }

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BODIES, hz, ROW, VOICES, type Voice } from "@/content/voices";
 
 /* The site's sounds, made on the spot with Web Audio (no files): a small metal tick for every tap, a detent for the archive's
-   tabs, the dust lifting and settling for the stage, and a hammer on the hero's rocks. Quiet by design, and one switch turns
-   them all off (remembered). Nothing plays before the reader's first press. */
-export type Cue = "tick" | "switch" | "open" | "close" | "case" | "bronze";
+   tabs, the dust lifting and settling for the stage, and every stone's own tune under the hammer (content/voices.ts). Quiet by
+   design, and one switch turns them all off (remembered). Nothing plays before the reader's first press. */
+export type Cue = "tick" | "switch" | "open" | "close" | "case" | "deal" | "gather";
 
 let ctx: AudioContext | null = null;
 let out: GainNode;
@@ -69,6 +70,30 @@ function tone(a: AudioContext, t: number, len: number, peak: number, f0: number,
   o.stop(t + len + 0.02);
 }
 
+/**
+ * One blow on a stone: the hammer's knock, then the note in that rock's partials. Lower notes are lifted a little, since a laptop's speakers
+ * and the ear both give them less. Never quite the same twice (a few cents, a little weight), so a tune doesn't sound like a sample, but always
+ * in tune. A press has the hammer's full weight: louder, longer, with the octave under the note.
+ */
+function ring(a: AudioContext, t: number, note: string, voice: Voice, hard = false) {
+  const { ring: partials, knock } = BODIES[voice.body];
+  const f = hz(note) * (1 + (Math.random() - 0.5) * 0.005);
+  const level = (1100 / f) ** 0.35 * (0.92 + Math.random() * 0.16) * (hard ? 1.45 : 1);
+  hiss(a, t, knock[0], 0.001, knock[1] * (hard ? 1.25 : 1), knock[2], knock[3], knock[4]);
+  for (const [r, p, len] of partials) tone(a, t, len * (hard ? 1.2 : 1), p * level, f * r, f * r * 0.996);
+  if (hard) tone(a, t, partials[0][2] * 1.2, partials[0][1] * 0.5 * level, f / 2, (f / 2) * 0.996);
+}
+
+/** A stone struck: n is which blow of the hammer, so which note of its tune. Without it, a press, on the tune's last note. */
+export function strike(stone: string, n?: number) {
+  if (typeof AudioContext === "undefined" || muted()) return;
+  const voice = VOICES[stone];
+  if (!voice) return sound("tick");
+  const a = audio();
+  const { tune } = voice;
+  ring(a, a.currentTime + 0.004, tune[n === undefined ? tune.length - 1 : n % tune.length], voice, n === undefined);
+}
+
 export function sound(cue: Cue) {
   if (typeof AudioContext === "undefined" || muted()) return;
   const a = audio();
@@ -84,12 +109,9 @@ export function sound(cue: Cue) {
     hiss(a, t, 0.75, 0.2, 0.1, 700, 3200, 0.9);
   } else if (cue === "close") {
     hiss(a, t, 0.85, 0.12, 0.09, 3000, 600, 0.9);
-  } else if (cue === "bronze") {
-    // A small hammer on a bronze plaque: a dull knock and a short ring of partials that don't make a chord.
-    // Never quite the same pitch twice, so three blows in a row don't sound like one sample.
-    const pitch = 1120 * (0.95 + Math.random() * 0.1);
-    hiss(a, t, 0.03, 0.001, 0.16, 2400, 1500, 2.4);
-    for (const [r, p, len] of [[1, 0.05, 0.32], [2.43, 0.022, 0.2], [3.91, 0.012, 0.12]]) tone(a, t, len, p, pitch * r, pitch * r * 0.996);
+  } else if (cue === "deal" || cue === "gather") {
+    // The stones lining up, or going back: each in turn on its first note, a run up the scale, or down it.
+    (cue === "deal" ? ROW : [...ROW].reverse()).forEach((stone, i) => ring(a, t + i * 0.06, VOICES[stone].tune[0], VOICES[stone]));
   } else {
     // A jewel case: the hollow knock of the plastic, then the hinge's click.
     hiss(a, t, 0.035, 0.001, 0.2, 1700, 1100, 3.5);
@@ -102,21 +124,31 @@ export function sound(cue: Cue) {
  * A hammer blow on a rock, which comes from a hover. A browser holds all sound back until the reader's first press, and a blow played
  * into a sleeping context would wait there and land with all the others on that press, so before then a blow is silent.
  */
-export function hammer() {
-  if (ctx?.state === "running") sound("bronze");
+export function hammer(stone: string, n: number) {
+  if (ctx?.state === "running") strike(stone, n);
 }
 
 /**
  * Every tap anywhere sounds, not only on links and buttons: a mouse on the press, like a real switch; a finger on the lift, so
  * a scroll, which cancels the touch, stays quiet; a key on the click it makes. data-sound picks another cue, or "none".
+ * A stone (.stamp) answers in its own voice, and so does anything marked data-stone: a word or a row that goes to that stone's page.
+ * data-stone-hover sounds it when pointed at as well, where pointing brings the stone up.
  */
 export function Sound() {
   useEffect(() => {
     let finger: { id: number; x: number; y: number; t: number } | null = null;
     const play = (t: EventTarget | null) => {
-      const el = t instanceof Element ? t.closest<HTMLElement>("a[href], button, [data-sound]") : null;
+      const at = t instanceof Element ? t : null;
+      const el = at?.closest<HTMLElement>("a[href], button, [data-sound], [data-stone]");
       if (el?.matches(":disabled") || el?.dataset.sound === "none") return;
-      sound((el?.dataset.sound as Cue | undefined) ?? "tick");
+      const stone = el?.dataset.stone ?? at?.closest<HTMLElement>(".stamp")?.dataset.slug;
+      if (stone) strike(stone);
+      else sound((el?.dataset.sound as Cue | undefined) ?? "tick");
+    };
+    const over = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse" || !(e.target instanceof Element)) return;
+      const el = e.target.closest<HTMLElement>("[data-stone-hover]");
+      if (el && !el.contains(e.relatedTarget as Node | null)) hammer(el.dataset.stone!, 0);
     };
     const down = (e: PointerEvent) => {
       if (!e.isPrimary) return;
@@ -140,6 +172,7 @@ export function Sound() {
       if (ctx?.state === "suspended" && !muted()) void ctx.resume();
     };
     addEventListener("pointerdown", down, true);
+    addEventListener("pointerover", over, { capture: true, passive: true });
     addEventListener("pointerup", up, true);
     addEventListener("pointercancel", cancel, true);
     addEventListener("click", click, true);
@@ -150,6 +183,7 @@ export function Sound() {
     if (typeof AudioContext !== "undefined") document.fonts.ready.then(() => setTimeout(() => muted() || make(), 150));
     return () => {
       removeEventListener("pointerdown", down, true);
+      removeEventListener("pointerover", over, true);
       removeEventListener("pointerup", up, true);
       removeEventListener("pointercancel", cancel, true);
       removeEventListener("click", click, true);

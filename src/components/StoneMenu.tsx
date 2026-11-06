@@ -52,7 +52,7 @@ export function StoneMenu({ github }: { github: string }) {
     <div ref={root} className="smenu" data-open={open || undefined}>
       <div className="smenu-blur" aria-hidden="true" />
       <div className="smenu-veil" onClick={shut} aria-hidden="true" />
-      <button ref={stone} type="button" data-boot="" className="smenu-stone" aria-label="Menu" aria-expanded={open} aria-controls="smenu-panel" data-sound="bronze" onClick={() => setOpen(!open)}>
+      <button ref={stone} type="button" data-boot="" className="smenu-stone" aria-label="Menu" aria-expanded={open} aria-controls="smenu-panel" data-stone="piece-menu" onClick={() => setOpen(!open)}>
         {/* eslint-disable-next-line @next/next/no-img-element -- baked with its outline in alpha, shown small */}
         <span className="smenu-bob">
           <img data-land="stone" src="/stamps/piece-menu.webp" alt="" width={216} height={271} decoding="async" draggable={false} />
@@ -64,7 +64,7 @@ export function StoneMenu({ github }: { github: string }) {
             Work
           </a>
           {PLACES.map((p) => (
-            <PageLink key={p.href} href={p.href} onClick={shut} preload={`/stamps/${p.stone}.webp`}>
+            <PageLink key={p.href} href={p.href} onClick={shut} preload={`/stamps/${p.stone}.webp`} data-stone={p.stone}>
               {/* eslint-disable-next-line @next/next/no-img-element -- pressed, this flies to its page */}
               <img data-fly="stone" src={`/stamps/${p.stone}-icon.webp`} alt="" width={216} height={271} loading="lazy" decoding="async" draggable={false} />
               {p.word}

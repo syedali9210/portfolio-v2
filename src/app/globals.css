@@ -430,13 +430,13 @@ html.boot.boot-in [data-boot] {
   transition-delay: calc(var(--b, 0) * 80ms);
 }
 @keyframes boot-fallback { to { opacity: 1; filter: none; translate: none; } }
-.scaffold { --scaffold: color-mix(in oklab, var(--color-ink) 26%, transparent); position: absolute; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; transition: opacity 0.7s var(--ease-out); }
+.scaffold { --scaffold: color-mix(in oklab, var(--color-ink) 26%, transparent); position: absolute; inset: 0; z-index: 60; overflow: hidden; pointer-events: none; transition: opacity 0.45s var(--ease-out); }
 .scaffold-out { opacity: 0; }
-.scaffold-across, .scaffold-down { position: absolute; animation: scaffold-draw 0.7s var(--ease-in-out) both; animation-delay: calc(var(--g, 0) * 40ms); }
+.scaffold-across, .scaffold-down { position: absolute; animation: scaffold-draw 0.45s var(--ease-in-out) both; animation-delay: calc(var(--g, 0) * 22ms); }
 .scaffold-across { left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--scaffold) 3px, transparent 3px) 0 0 / 6px 1px; transform-origin: left; scale: 0 1; }
 .scaffold-down { top: 0; height: 100svh; width: 1px; background: linear-gradient(180deg, var(--scaffold) 3px, transparent 3px) 0 0 / 1px 6px; transform-origin: top; scale: 1 0; }
 @keyframes scaffold-draw { to { scale: 1 1; } }
-.scaffold-box { position: absolute; outline: 1px dashed var(--scaffold); opacity: 0; animation: scaffold-box 0.5s var(--ease-out) both; animation-delay: calc(var(--g, 0) * 60ms + 260ms); }
+.scaffold-box { position: absolute; outline: 1px dashed var(--scaffold); opacity: 0; animation: scaffold-box 0.3s var(--ease-out) both; animation-delay: calc(var(--g, 0) * 32ms + 140ms); }
 @keyframes scaffold-box { to { opacity: 1; } }
 
 /* The paper (Paper.tsx): a fine fibre and a drifting grain laid over the page as faint translucent flecks (no blend

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { type ComponentProps, type MouseEvent, useEffect, useRef, useTransition } from "react";
 import { still } from "./scroll";
 
@@ -68,6 +68,10 @@ const settled = () => {
   run?.();
 };
 
+/** Done when the page change under way has landed: heavy work that isn't urgent waits for this, so it never runs under a flight. */
+let flight: Promise<unknown> = Promise.resolve();
+export const landed = () => flight;
+
 export function usePageNav() {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -118,12 +122,39 @@ export function usePageNav() {
           start(() => router.push(href));
         }),
     );
-    vt.finished.finally(() => {
-      named.forEach((el) => el.style.removeProperty("view-transition-name"));
-      document.querySelectorAll(".stamp[data-flying]").forEach(release);
-      delete html.dataset.flyStone;
-    });
+    flight = vt.finished
+      .finally(() => {
+        named.forEach((el) => el.style.removeProperty("view-transition-name"));
+        document.querySelectorAll(".stamp[data-flying]").forEach(release);
+        delete html.dataset.flyStone;
+      })
+      .catch(() => {});
   };
+}
+
+/**
+ * The browser's own back and forward. Next swaps the page there and then, inside the event, and the browser puts the reader's scroll back, so
+ * nothing flies; but the new page comes up out of the sheet instead of cutting in. A phone's swipe back has already animated, so it's left alone.
+ * The page's smooth scrolling is off for that moment: with it, the reader's place came back as a long scroll down from the top.
+ */
+export function BackFade() {
+  const path = usePathname();
+  const was = useRef(path);
+  useEffect(() => {
+    was.current = path;
+  }, [path]);
+  useEffect(() => {
+    const pop = (e: PopStateEvent) => {
+      if (location.pathname === was.current) return;
+      const html = document.documentElement;
+      html.style.scrollBehavior = "auto";
+      setTimeout(() => html.style.removeProperty("scroll-behavior"), 100);
+      if (!still() && !e.hasUAVisualTransition) document.body.animate({ opacity: [0, 1] }, { duration: 260, easing: "ease-out" });
+    };
+    addEventListener("popstate", pop);
+    return () => removeEventListener("popstate", pop);
+  }, []);
+  return null;
 }
 
 export function PageLink({ href, onClick, preload, ...rest }: ComponentProps<typeof Link> & { href: string; preload?: string }) {

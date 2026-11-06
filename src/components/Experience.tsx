@@ -54,7 +54,7 @@ export function Experience() {
                   ))}
                 </ul>
                 {role.href && (
-                  <PageLink href={role.href} className="xp-go">
+                  <PageLink href={role.href} className="xp-go" data-stone={role.stones[0]?.slug}>
                     Read the case study <span aria-hidden="true">→</span>
                   </PageLink>
                 )}

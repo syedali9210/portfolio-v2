@@ -2,7 +2,7 @@
 
 import { type CSSProperties, type RefObject, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { PageLink } from "./PageLink";
+import { landed, PageLink } from "./PageLink";
 import { onScrollFrame, still } from "./scroll";
 import { hammer } from "./Sound";
 import { warmEffects } from "./warm";
@@ -29,7 +29,7 @@ const LIFT = 1.3, STRAIGHTEN = 0.38;
 /** The little pair of stamps at the top of the first screen: lines them all up in a row, and back. */
 export function StampTrigger() {
   return (
-    <button type="button" className="stamp-trigger" aria-label="Line up the stamps" data-sound="bronze" onClick={() => dispatchEvent(new Event("stamps:row"))}>
+    <button type="button" className="stamp-trigger" aria-label="Line up the stamps" data-sound="deal" onClick={() => dispatchEvent(new Event("stamps:row"))}>
       {/* eslint-disable-next-line @next/next/no-img-element -- two tiny stamps */}
       <img src="/stamps/trace-sm.webp" alt="" width={24} height={30} draggable={false} />
       {/* eslint-disable-next-line @next/next/no-img-element -- two tiny stamps */}
@@ -44,10 +44,32 @@ export type Stones = { frozen: boolean; clear(): void; wake(li: HTMLElement): vo
 const ROOM = 8;
 
 /**
+ * A stone's GL outlives its page. Building one means five maps to fetch and decode, a context and its shaders; doing that for every stone on every
+ * return to a page was the stutter after a flight. So the workers stay, and a stone leaving the page is parked, small and drawing nothing, until
+ * a page showing the same stone wants it back. The longest parked make room first.
+ */
+type Held = { id: number; on: number; canvas: HTMLCanvasElement };
+const workers: Worker[] = [];
+const load = [0, 0];
+const parked = new Map<string, Held>(); // by stone, oldest first
+let nextId = 1;
+const drop = (h: Held) => {
+  workers[h.on].postMessage({ type: "drop", id: h.id });
+  load[h.on]--;
+  h.canvas.remove();
+};
+
+/** On a slow or metered connection a stone's maps, a megabyte each, only load once it's pointed at. */
+const thrifty = () => {
+  const c = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  return !!c?.saveData || /2g|3g/.test(c?.effectiveType ?? "");
+};
+
+/**
  * Every .stamp inside `host` comes alive: at rest a picture, pointed at it lifts off the page on its own canvas and is hammered
- * (stamp.worker.ts), and each blow sounds. The hover is tested here against where the lifted stone really is, so it never flickers
+ * (stamp.worker.ts), and each blow plays the next note of its tune. The hover is tested here against where the lifted stone really is, so it never flickers
  * as it moves under the pointer. On a keyboard, focus lifts it. Under reduced motion, or without a worker's WebGL, they stay pictures.
- * ahead: how many to set up once the page is idle (or a function saying so then); the rest wake as they're pointed at, the oldest going back to sleep to make room.
+ * ahead: how many to set up once the page has landed and is idle, one at a time so the GPU never takes them all at once (or a function saying how many then); the rest wake as they're pointed at, the oldest going back to sleep to make room.
  * twoTap: a finger's first tap lifts and the second goes in. hoverOnly: nothing to lift on a touch screen, so no GL there at all.
  * push: the others make room as one lifts, which only suits a few. rise: how far it lifts up, of its height, off what's under it.
  */
@@ -59,12 +81,9 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
     const lis = [...root.querySelectorAll<HTMLElement>(".stamp")];
     const canGL = !still() && "transferControlToOffscreen" in HTMLCanvasElement.prototype && (!hoverOnly || matchMedia("(hover: hover) and (pointer: fine)").matches);
     if (!canGL) root.dataset.flat = "";
-    const workers: Worker[] = [];
-    const load = [0, 0];
-    const live = new Map<HTMLElement, { id: number; on: number }>();
+    const live = new Map<HTMLElement, Held>();
     const byId = new Map<number, HTMLElement>();
     const order: HTMLElement[] = []; // awake, oldest first
-    let nextId = 1;
     let current: HTMLElement | null = null;
     let touch = false, px = -1e4, py = -1e4;
     const post = (li: HTMLElement, m: object) => {
@@ -84,59 +103,99 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
     const sleep = (li: HTMLElement) => {
       const w = live.get(li);
       if (!w) return;
-      workers[w.on].postMessage({ type: "drop", id: w.id });
+      drop(w);
       byId.delete(w.id);
       live.delete(li);
-      load[w.on]--;
       order.splice(order.indexOf(li), 1);
       delete li.dataset.gl;
-      li.querySelector(".stamp-gl")?.remove();
     };
-    const wake = (li: HTMLElement) => {
+    // urgent: it's being pointed at, so its maps go ahead of anything else loading.
+    const wake = (li: HTMLElement, urgent = true) => {
       if (!workers.length || live.has(li)) return;
-      if (order.length >= ROOM) {
-        const old = order.find((o) => o !== current && !o.dataset.gl);
-        if (!old) return;
-        sleep(old);
+      const slug = li.dataset.slug!, back = parked.get(slug);
+      let held = back;
+      if (back) {
+        parked.delete(slug);
+        li.append(back.canvas);
+      } else {
+        if (order.length + parked.size >= ROOM) {
+          const longest = parked.keys().next().value;
+          const old = order.find((o) => o !== current && !o.dataset.gl);
+          if (longest !== undefined) {
+            drop(parked.get(longest)!);
+            parked.delete(longest);
+          } else if (old) sleep(old);
+          else return;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.className = "stamp-gl";
+        canvas.setAttribute("aria-hidden", "true");
+        li.append(canvas);
+        const off = canvas.transferControlToOffscreen();
+        const id = nextId++, on = load[0] <= load[1] ? 0 : 1;
+        load[on]++;
+        held = { id, on, canvas };
+        const { w, h } = sizeOf(li);
+        workers[on].postMessage({ type: "init", id, canvas: off, slug, base: "/stamps/", w, h, box: canvas.clientWidth, dpr: Math.min(2, devicePixelRatio), rot: rotOf(li), urgent }, [off]);
       }
-      const canvas = document.createElement("canvas");
-      canvas.className = "stamp-gl";
-      canvas.setAttribute("aria-hidden", "true");
-      li.append(canvas);
-      const off = canvas.transferControlToOffscreen();
-      const id = nextId++, on = load[0] <= load[1] ? 0 : 1;
-      load[on]++;
-      live.set(li, { id, on });
-      byId.set(id, li);
+      live.set(li, held!);
+      byId.set(held!.id, li);
       order.push(li);
-      const { w, h } = sizeOf(li);
-      workers[on].postMessage({ type: "init", id, canvas: off, slug: li.dataset.slug, base: "/stamps/", w, h, box: canvas.clientWidth, dpr: Math.min(2, devicePixelRatio), rot: rotOf(li) }, [off]);
+      if (back) {
+        // It may hang at another size and turn here.
+        const { w, h } = sizeOf(li);
+        post(li, { type: "size", w, h, box: back.canvas.clientWidth, dpr: Math.min(2, devicePixelRatio) });
+        post(li, { type: "rot", rot: rotOf(li) });
+      }
     };
 
-    const start = () => {
-      if (!canGL) return;
-      const hear = ({ data }: MessageEvent) => {
-        const li = byId.get(data.id);
-        if (!li) return;
-        if (data.type === "on") li.dataset.gl = "";
-        else if (data.type === "rest") delete li.dataset.gl;
-        else if (data.type === "blow") hammer();
-        else if (data.type === "failed") {
-          // This one stays a picture.
-          sleep(li);
-          li.dataset.flat = "";
-        }
-      };
-      for (let i = 0; i < 2; i++) {
-        const w = new Worker(new URL("./stamp.worker.ts", import.meta.url));
-        w.onmessage = hear;
-        workers.push(w);
+    // Set up ahead of the pointer, one at a time; a stone that's parked is simply there.
+    let gone = false, building = 0, queue: HTMLElement[] = [];
+    const next = () => {
+      while (queue.length) {
+        const li = queue.shift()!, fresh = !parked.has(li.dataset.slug!) && !live.has(li);
+        wake(li, false);
+        if (fresh && live.has(li)) return void (building = live.get(li)!.id);
       }
-      lis.slice(0, typeof ahead === "function" ? ahead() : ahead).forEach(wake);
     };
+    const hear = ({ data }: MessageEvent) => {
+      if (data.id === building && (data.type === "ready" || data.type === "failed")) {
+        building = 0;
+        setTimeout(next, 80);
+      }
+      const li = byId.get(data.id);
+      if (!li) {
+        // A parked stone's context can be lost too, and then it isn't there to come back.
+        if (data.type === "failed") for (const [slug, h] of parked) if (h.id === data.id) {
+          parked.delete(slug);
+          load[h.on]--;
+        }
+        return;
+      }
+      if (data.type === "on") li.dataset.gl = "";
+      else if (data.type === "rest") delete li.dataset.gl;
+      else if (data.type === "blow") hammer(li.dataset.slug!, data.n);
+      else if (data.type === "failed") {
+        // This one stays a picture.
+        sleep(li);
+        li.dataset.flat = "";
+      }
+    };
+    workers.forEach((w) => (w.onmessage = hear));
+    const start = () => {
+      if (gone || !canGL) return;
+      if (!workers.length)
+        for (let i = 0; i < 2; i++) {
+          const w = new Worker(new URL("./stamp.worker.ts", import.meta.url));
+          w.onmessage = hear;
+          workers.push(w);
+        }
+      queue = thrifty() ? [] : lis.slice(0, typeof ahead === "function" ? ahead() : ahead);
+      next();
+    };
+    // Never under a flight: starting a context stalls the GPU for a moment, and the flight is the GPU's.
     if (document.documentElement.classList.contains("boot")) addEventListener("boot:done", start, { once: true });
-    else if ("requestIdleCallback" in window) requestIdleCallback(start, { timeout: 2500 });
-    else setTimeout(start, 1200);
+    else landed().then(() => ("requestIdleCallback" in window ? requestIdleCallback(start, { timeout: 1200 }) : setTimeout(start, 300)));
 
     const resize = () => {
       lis.forEach((li) => {
@@ -273,6 +332,8 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
     root.addEventListener("focusin", onFocusIn);
     root.addEventListener("focusout", onFocusOut);
     return () => {
+      gone = true;
+      queue = [];
       removeEventListener("boot:done", start);
       removeEventListener("pointermove", onMove);
       removeEventListener("pointerdown", onDown, { capture: true });
@@ -282,8 +343,14 @@ export function useStones(host: RefObject<HTMLElement | null>, { ahead = Infinit
       root.removeEventListener("focusout", onFocusOut);
       ro.disconnect();
       offScroll();
-      [...order].forEach(sleep);
-      workers.forEach((w) => w.terminate());
+      for (const li of order) {
+        const w = live.get(li)!, slug = li.dataset.slug!, twin = parked.get(slug);
+        workers[w.on].postMessage({ type: "park", id: w.id });
+        w.canvas.remove();
+        if (twin) drop(twin);
+        parked.delete(slug);
+        parked.set(slug, w);
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- set up once
   }, []);
@@ -553,7 +620,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
                 {/* eslint-disable-next-line @next/next/no-img-element -- baked with its perforated edge in alpha, 512 px */}
                 <img src={`/stamps/${s.slug}-sm.webp`} alt="" width={512} height={641} decoding="async" draggable={false} />
               </span>
-              <PageLink href={`/work/${s.slug}`} className="stamp-link" aria-label={`${s.title}, ${s.kind} ${s.year}: read the case study`} data-sound="bronze" draggable={false} />
+              <PageLink href={`/work/${s.slug}`} className="stamp-link" aria-label={`${s.title}, ${s.kind} ${s.year}: read the case study`} draggable={false} />
               <span className="stamp-tag" aria-hidden="true">
                 {s.title}
               </span>
@@ -561,7 +628,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
           );
         })}
       </ul>
-      <button type="button" className="stamps-back" onClick={() => dispatchEvent(new Event("stamps:row"))} data-sound="bronze">
+      <button type="button" className="stamps-back" onClick={() => dispatchEvent(new Event("stamps:row"))} data-sound="gather">
         <span aria-hidden="true">←</span> Go back <span className="text-label">[Esc]</span>
       </button>
       <div className="stamp-blur" data-open={open || undefined} aria-hidden="true" />
@@ -577,7 +644,7 @@ export function Stamps({ items }: { items: StampItem[] }) {
             {words?.who ? ` · ${words.who}` : ""}
           </p>
           <p className="stamp-sheet-text">{words?.summary}</p>
-          <PageLink href={words ? `/work/${words.slug}` : "/"} className="stamp-go" tabIndex={words ? undefined : -1}>
+          <PageLink href={words ? `/work/${words.slug}` : "/"} className="stamp-go" tabIndex={words ? undefined : -1} data-stone={words?.slug}>
             Read the case study <span aria-hidden="true">→</span>
           </PageLink>
         </div>
